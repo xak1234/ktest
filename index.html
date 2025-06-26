@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Kieran's Catapult Bands | Premium Slingshot Gear</title>
+  <script src="https://js.stripe.com/v3/"></script>
   <style>
    body {
   font-family: 'Segoe UI', sans-serif;
@@ -25,28 +26,6 @@ body::before {
   background-position: center;
   background-repeat: no-repeat;
   z-index: -2;
-  animation: backgroundCycle 16s infinite;
-}
-
-body::after {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: url('k2.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  z-index: -1;
-  opacity: 0;
-  animation: backgroundCycle 16s infinite 8s;
-}
-
-@keyframes backgroundCycle {
-  0%, 35% { opacity: 1; }
-  65%, 100% { opacity: 0; }
 }
 
 header {
@@ -611,9 +590,9 @@ p {
 }
 
 footer {
-  background-color: #121212;
+  background-color: transparent;
   text-align: center;
-  padding: 20px;
+  padding: 0;
   font-size: 0.75rem;
   color: #ffffff;
   font-family: 'Courier New', 'Monaco', 'Terminal', monospace;
@@ -639,45 +618,89 @@ footer a:hover {
   text-shadow: 0 0 5px #00ff00;
 }
 
-@media (max-width: 600px) {
-  .news-card,
-  .slingshot-world-card {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .news-image,
-  .slingshot-world-image {
-    width: 100px;
-    height: 100px;
-  }
+.contact-section {
+  background-color: #000000;
+  border: 3px solid #333333;
+  margin: 20px;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
-.management-buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  margin-top: 15px;
+.sling-secret {
+  text-align: center;
+  margin: 10px 0 0 0;
+  padding: 5px;
 }
 
-.start-btn {
-  background-color: #00ff00;
-  color: #000000;
+.sling-secret img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  opacity: 0.7;
 }
 
-.start-btn:hover {
-  background-color: #00cc00;
-  box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+.sling-secret img:hover {
+  transform: scale(1.1);
+  border-color: #00ff00;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+  opacity: 1;
 }
 
-.finish-btn {
-  background-color: #6c5ce7;
+.sling-secret img.clicked {
+  border-color: #ff6b35;
+  box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
+  animation: pulse 0.5s ease;
+  opacity: 1;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.photo-upload-section {
+  margin: 15px 0;
+}
+
+.photo-upload-label {
+  color: #00e5ff;
+  font-family: 'Courier New', 'Monaco', 'Terminal', monospace;
+  font-weight: bold;
+  margin-bottom: 5px;
+  text-shadow: 0 0 5px #00e5ff;
+}
+
+.photo-upload-input {
+  width: 100%;
+  padding: 8px;
+  margin: 5px 0;
+  border: 2px solid #00e5ff;
+  border-radius: 6px;
+  background-color: rgba(0, 0, 0, 0.7);
   color: #ffffff;
+  font-family: 'Courier New', 'Monaco', 'Terminal', monospace;
+  font-size: 0.9rem;
 }
 
-.finish-btn:hover {
-  background-color: #5b4bd1;
-  box-shadow: 0 0 15px rgba(108, 92, 231, 0.5);
+.photo-upload-input:focus {
+  outline: none;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+}
+
+.photo-preview {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin: 10px auto;
+  display: block;
+  border: 2px solid #00e5ff;
 }
   </style>
 </head>
@@ -734,10 +757,41 @@ footer a:hover {
         <textarea id="descriptionInput" class="description-input" placeholder="Enter a detailed description of this product..."></textarea>
       </div>
       
+      <div class="photo-upload-section">
+        <label for="photoUrlInput" class="photo-upload-label">🖼️ Product Photo URL</label>
+        <input type="url" id="photoUrlInput" class="photo-upload-input" placeholder="Enter new photo URL (optional)">
+        <img id="photoPreview" class="photo-preview" style="display: none;" alt="Photo Preview">
+      </div>
+      
       <div class="modal-buttons">
         <button class="modal-btn save-btn" onclick="saveProductDetails()">💾 Save Details</button>
         <button class="modal-btn cancel-btn" onclick="closeDescriptionModal()">❌ Cancel</button>
       </div>
+    </div>
+  </div>
+  
+  <!-- Stripe Payment Modal -->
+  <div id="stripeModal" class="description-modal">
+    <div class="description-modal-content">
+      <h2>Complete Purchase</h2>
+      <img id="stripeProductImage" src="" alt="Product">
+      <p id="stripeProductName"></p>
+      <p id="stripeProductPrice" class="popup-product-price"></p>
+      
+      <form id="payment-form">
+        <div id="card-element" style="margin: 20px 0; padding: 12px; border: 2px solid #6772e5; border-radius: 8px; background: rgba(0, 0, 0, 0.7);">
+          <!-- Stripe Elements will be inserted here -->
+        </div>
+        <div id="card-errors" style="color: #ff6b35; margin: 10px 0; font-family: 'Courier New', 'Monaco', 'Terminal', monospace;"></div>
+        
+        <div class="modal-buttons">
+          <button type="submit" class="modal-btn save-btn" id="submit-payment">
+            <span id="button-text">Pay Now</span>
+            <div id="spinner" style="display: none;">Processing...</div>
+          </button>
+          <button type="button" class="modal-btn cancel-btn" onclick="closeStripeModal()">❌ Cancel</button>
+        </div>
+      </form>
     </div>
   </div>
   
@@ -759,7 +813,7 @@ footer a:hover {
     
     <div class="slingshot-world-card">
       <a href="https://www.slingshotworld.co.uk/" target="_blank">
-        <img src="sling.png" alt="Slingshot World" class="slingshot-world-image">
+        <img src="sling.jpg" alt="Slingshot World" class="slingshot-world-image">
       </a>
       <div class="slingshot-world-content">
         <a href="https://www.slingshotworld.co.uk/" target="_blank" class="slingshot-world-title-link">
@@ -770,19 +824,43 @@ footer a:hover {
     </div>
   </div>
   
-  <footer>
-    <p>Find us on <a href="https://www.facebook.com/kieranleekcb" target="_blank">Facebook</a> | 
-       <a href="https://www.ebay.co.uk/str/kieranscatapultbandslimited" target="_blank">eBay</a>
-    </p>
-    <p>Email: <a href="mailto:kieranscatapultbandslimited@gmail.com">kieranscatapultbandslimited@gmail.com</a></p>
-  </footer>
+  <div class="contact-section">
+    <footer>
+      <p>Find us on <a href="https://www.facebook.com/kieranleekcb" target="_blank">Facebook</a> | 
+         <a href="https://www.ebay.co.uk/str/kieranscatapultbandslimited" target="_blank">eBay</a>
+      </p>
+      <p>Email: <a href="mailto:kieranscatapultbandslimited@gmail.com">kieranscatapultbandslimited@gmail.com</a></p>
+    </footer>
+    
+    <div class="sling-secret">
+      <img src="tig.png" alt="Tiger" id="slingSecret" onclick="handleSlingClick()">
+    </div>
+  </div>
 
   <script>
     // Global variables for description management
     let productPrices = {};
     let productDescriptions = {};
+    let productPhotos = {};
     let currentProductId = null;
     let isManagementMode = false;
+    let stripe = null;
+    let elements = null;
+    let currentStripeProduct = null;
+    let slingClickCount = 0;
+    let slingClickTimeout = null;
+    
+    // GitHub API configuration (you'll need to provide these)
+    const GITHUB_TOKEN = 'your_github_token_here';
+    const GITHUB_REPO = 'xak1234/ktest';
+    const GITHUB_BRANCH = 'main';
+    
+    // Initialize Stripe
+    function initializeStripe() {
+      // Replace with your actual Stripe publishable key
+      stripe = Stripe('pk_test_your_publishable_key_here');
+      elements = stripe.elements();
+    }
     
     async function loadProducts() {
       try {
@@ -807,12 +885,28 @@ footer a:hover {
             <p>${displayName}</p>
             <p class="product-price" id="price-${index}" style="display: none;">£0.00</p>
             <p class="product-description" id="description-${index}" style="display: none;"></p>
+            <div class="product-popup" id="popup-${index}" style="display: none;">
+              <div class="popup-product-name">${displayName}</div>
+              <div class="popup-product-price" id="popup-price-${index}">£0.00</div>
+              <div class="popup-product-description" id="popup-description-${index}">No description available</div>
+              <div class="payment-buttons">
+                <button class="popup-buy-button" onclick="buyProduct(${index}, '${displayName}', 'paypal')">
+                  💳 Buy Now via PayPal
+                </button>
+                <button class="popup-stripe-button" onclick="buyProduct(${index}, '${displayName}', 'stripe')">
+                  💳 Buy Now via Stripe
+                </button>
+              </div>
+            </div>
           `;
           
           // Add click event listener for description management
           el.addEventListener('click', () => {
             if (isManagementMode) {
               openDescriptionModal(index, file.download_url, displayName);
+            } else if (productPrices[index]) {
+              // Customer mode - show payment options
+              showPaymentOptions(index, displayName);
             }
           });
           
@@ -823,7 +917,11 @@ footer a:hover {
         loadSavedData();
         displayPrices();
         displayDescriptions();
+        displayPhotos();
         updateDescriptionStats();
+        
+        // Initialize Stripe
+        initializeStripe();
         
       } catch (e) {
         document.getElementById('gallery').innerHTML =
@@ -836,12 +934,16 @@ footer a:hover {
     function loadSavedData() {
       const savedPrices = localStorage.getItem('productPrices');
       const savedDescriptions = localStorage.getItem('productDescriptions');
+      const savedPhotos = localStorage.getItem('productPhotos');
       
       if (savedPrices) {
         productPrices = JSON.parse(savedPrices);
       }
       if (savedDescriptions) {
         productDescriptions = JSON.parse(savedDescriptions);
+      }
+      if (savedPhotos) {
+        productPhotos = JSON.parse(savedPhotos);
       }
     }
     
@@ -851,10 +953,19 @@ footer a:hover {
         const price = productPrices[productId];
         const productElement = document.querySelector(`#price-${productId}`);
         const productCard = productElement.closest('.product');
+        const popupElement = document.querySelector(`#popup-${productId}`);
+        const popupPriceElement = document.querySelector(`#popup-price-${productId}`);
         
         if (productElement && productCard) {
           productElement.textContent = `£${price.toFixed(2)}`;
           productElement.style.display = 'block';
+          productCard.classList.add('has-price');
+          
+          // Show popup for products with prices
+          if (popupElement && popupPriceElement) {
+            popupElement.style.display = 'block';
+            popupPriceElement.textContent = `£${price.toFixed(2)}`;
+          }
         }
       });
     }
@@ -865,11 +976,30 @@ footer a:hover {
         const description = productDescriptions[productId];
         const productElement = document.querySelector(`#description-${productId}`);
         const productCard = productElement.closest('.product');
+        const popupDescriptionElement = document.querySelector(`#popup-description-${productId}`);
         
         if (productElement && productCard) {
           productElement.textContent = description;
           productElement.style.display = 'block';
           productCard.classList.add('has-description');
+          
+          // Update popup description
+          if (popupDescriptionElement) {
+            popupDescriptionElement.textContent = description;
+          }
+        }
+      });
+    }
+    
+    // Display photos on products
+    function displayPhotos() {
+      Object.keys(productPhotos).forEach(productId => {
+        const photoUrl = productPhotos[productId];
+        const productCard = document.querySelector(`[data-product-id="${productId}"]`);
+        const productImage = productCard.querySelector('img');
+        
+        if (productImage && photoUrl) {
+          productImage.src = photoUrl;
         }
       });
     }
@@ -882,8 +1012,23 @@ footer a:hover {
       // Set current price and description if they exist
       const currentPrice = productPrices[productId] || '';
       const currentDescription = productDescriptions[productId] || '';
+      const currentPhoto = productPhotos[productId] || '';
+      
       document.getElementById('priceInput').value = currentPrice;
       document.getElementById('descriptionInput').value = currentDescription;
+      document.getElementById('photoUrlInput').value = currentPhoto;
+      
+      // Show photo preview if available
+      const photoPreview = document.getElementById('photoPreview');
+      if (currentPhoto) {
+        photoPreview.src = currentPhoto;
+        photoPreview.style.display = 'block';
+      } else {
+        photoPreview.style.display = 'none';
+      }
+      
+      // Add event listener for photo URL input
+      document.getElementById('photoUrlInput').addEventListener('input', handlePhotoUrlInput);
       
       document.getElementById('descriptionModal').style.display = 'block';
       document.getElementById('priceInput').focus();
@@ -897,8 +1042,10 @@ footer a:hover {
     function saveProductDetails() {
       const priceInput = document.getElementById('priceInput');
       const descriptionInput = document.getElementById('descriptionInput');
+      const photoUrlInput = document.getElementById('photoUrlInput');
       const price = parseFloat(priceInput.value.trim());
       const description = descriptionInput.value.trim();
+      const photoUrl = photoUrlInput.value.trim();
       
       if (currentProductId !== null) {
         if (price && !isNaN(price)) {
@@ -913,30 +1060,69 @@ footer a:hover {
           delete productDescriptions[currentProductId];
         }
         
+        if (photoUrl) {
+          productPhotos[currentProductId] = photoUrl;
+        } else {
+          delete productPhotos[currentProductId];
+        }
+        
         // Update the product display
         const priceElement = document.querySelector(`#price-${currentProductId}`);
         const descriptionElement = document.querySelector(`#description-${currentProductId}`);
         const productCard = priceElement.closest('.product');
+        const popupElement = document.querySelector(`#popup-${currentProductId}`);
+        const popupPriceElement = document.querySelector(`#popup-price-${currentProductId}`);
+        const popupDescriptionElement = document.querySelector(`#popup-description-${currentProductId}`);
+        const productImage = productCard.querySelector('img');
+        
+        // Update product image if new photo URL provided
+        if (photoUrl && productImage) {
+          productImage.src = photoUrl;
+        }
         
         if (price && !isNaN(price)) {
           priceElement.textContent = `£${price.toFixed(2)}`;
           priceElement.style.display = 'block';
+          productCard.classList.add('has-price');
+          
+          // Update popup
+          if (popupElement && popupPriceElement) {
+            popupElement.style.display = 'block';
+            popupPriceElement.textContent = `£${price.toFixed(2)}`;
+          }
         } else {
           priceElement.style.display = 'none';
+          productCard.classList.remove('has-price');
+          
+          // Hide popup if no price
+          if (popupElement) {
+            popupElement.style.display = 'none';
+          }
         }
         
         if (description) {
           descriptionElement.textContent = description;
           descriptionElement.style.display = 'block';
           productCard.classList.add('has-description');
+          
+          // Update popup description
+          if (popupDescriptionElement) {
+            popupDescriptionElement.textContent = description;
+          }
         } else {
           descriptionElement.style.display = 'none';
           productCard.classList.remove('has-description');
+          
+          // Reset popup description
+          if (popupDescriptionElement) {
+            popupDescriptionElement.textContent = 'No description available';
+          }
         }
         
         // Save to localStorage
         localStorage.setItem('productPrices', JSON.stringify(productPrices));
         localStorage.setItem('productDescriptions', JSON.stringify(productDescriptions));
+        localStorage.setItem('productPhotos', JSON.stringify(productPhotos));
         
         // Update stats
         updateDescriptionStats();
@@ -1107,6 +1293,238 @@ footer a:hover {
         });
       }
     });
+    
+    // Function to handle buying a product
+    function buyProduct(productId, productName, paymentMethod = 'paypal') {
+      const price = productPrices[productId];
+      const description = productDescriptions[productId] || 'No description available';
+      
+      if (!price) {
+        alert('This product is not available for purchase yet.');
+        return;
+      }
+      
+      if (paymentMethod === 'paypal') {
+        // Create PayPal payment URL
+        const paypalUrl = createPayPalPaymentUrl(productName, price, description);
+        
+        // Open PayPal in new window
+        window.open(paypalUrl, '_blank');
+      } else if (paymentMethod === 'stripe') {
+        // Open Stripe payment modal
+        openStripeModal(productId, productName, price, description);
+      }
+    }
+    
+    // Function to create PayPal payment URL
+    function createPayPalPaymentUrl(productName, price, description) {
+      const paypalEmail = 'kieranscatapultbandslimited@gmail.com'; // Your PayPal email
+      const amount = price.toFixed(2);
+      const itemName = encodeURIComponent(productName);
+      const itemDescription = encodeURIComponent(description);
+      
+      // PayPal.me URL format
+      const paypalMeUrl = `https://www.paypal.com/paypalme/2SQKF9HWFFRWJ?amount=${amount}&currency=GBP&note=${itemName}`;
+      
+      return paypalMeUrl;
+    }
+    
+    // Function to open Stripe payment modal
+    function openStripeModal(productId, productName, price, description) {
+      currentStripeProduct = { productId, productName, price, description };
+      
+      // Set modal content
+      document.getElementById('stripeProductImage').src = document.querySelector(`[data-product-id="${productId}"] img`).src;
+      document.getElementById('stripeProductName').textContent = productName;
+      document.getElementById('stripeProductPrice').textContent = `£${price.toFixed(2)}`;
+      
+      // Create Stripe card element
+      const cardElement = elements.create('card', {
+        style: {
+          base: {
+            color: '#ffffff',
+            fontFamily: '"Courier New", "Monaco", "Terminal", monospace',
+            fontSize: '16px',
+            '::placeholder': {
+              color: '#aab7c4'
+            }
+          },
+          invalid: {
+            color: '#ff6b35',
+            iconColor: '#ff6b35'
+          }
+        }
+      });
+      
+      cardElement.mount('#card-element');
+      
+      // Handle real-time validation errors
+      cardElement.addEventListener('change', function(event) {
+        const displayError = document.getElementById('card-errors');
+        if (event.error) {
+          displayError.textContent = event.error.message;
+        } else {
+          displayError.textContent = '';
+        }
+      });
+      
+      // Handle form submission
+      const form = document.getElementById('payment-form');
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        const submitButton = document.getElementById('submit-payment');
+        const buttonText = document.getElementById('button-text');
+        const spinner = document.getElementById('spinner');
+        
+        submitButton.disabled = true;
+        buttonText.style.display = 'none';
+        spinner.style.display = 'block';
+        
+        stripe.createToken(cardElement).then(function(result) {
+          if (result.error) {
+            const errorElement = document.getElementById('card-errors');
+            errorElement.textContent = result.error.message;
+            submitButton.disabled = false;
+            buttonText.style.display = 'block';
+            spinner.style.display = 'none';
+          } else {
+            // Send token to your server
+            processStripePayment(result.token, currentStripeProduct);
+          }
+        });
+      });
+      
+      document.getElementById('stripeModal').style.display = 'block';
+    }
+    
+    // Function to process Stripe payment
+    function processStripePayment(token, product) {
+      // This would typically send the token to your server
+      // For now, we'll simulate a successful payment
+      
+      // You would make an API call to your server here:
+      // fetch('/api/process-payment', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({
+      //     token: token.id,
+      //     amount: product.price * 100, // Convert to cents
+      //     currency: 'gbp',
+      //     productName: product.productName,
+      //     productDescription: product.description
+      //   })
+      // })
+      
+      // Simulate successful payment
+      setTimeout(() => {
+        closeStripeModal();
+        alert(`Payment successful! Thank you for purchasing ${product.productName} for £${product.price.toFixed(2)}`);
+      }, 2000);
+    }
+    
+    // Function to close Stripe modal
+    function closeStripeModal() {
+      document.getElementById('stripeModal').style.display = 'none';
+      currentStripeProduct = null;
+      
+      // Clear card element
+      const cardElement = document.getElementById('card-element');
+      if (cardElement) {
+        cardElement.innerHTML = '';
+      }
+      
+      // Reset form
+      document.getElementById('payment-form').reset();
+      document.getElementById('card-errors').textContent = '';
+      document.getElementById('submit-payment').disabled = false;
+      document.getElementById('button-text').style.display = 'block';
+      document.getElementById('spinner').style.display = 'none';
+    }
+    
+    // Function to show payment options
+    function showPaymentOptions(productId, productName) {
+      const price = productPrices[productId];
+      const description = productDescriptions[productId] || 'No description available';
+      
+      if (!price) {
+        alert('This product is not available for purchase yet.');
+        return;
+      }
+      
+      // For now, default to PayPal. You could create a payment method selection modal here
+      buyProduct(productId, productName, 'paypal');
+    }
+    
+    // Function to handle sling image clicks
+    function handleSlingClick() {
+      const slingImage = document.getElementById('slingSecret');
+      
+      // Add visual feedback
+      slingImage.classList.add('clicked');
+      setTimeout(() => slingImage.classList.remove('clicked'), 500);
+      
+      slingClickCount++;
+      
+      // Reset counter after 5 seconds of inactivity
+      if (slingClickTimeout) {
+        clearTimeout(slingClickTimeout);
+      }
+      slingClickTimeout = setTimeout(() => {
+        slingClickCount = 0;
+      }, 5000);
+      
+      // Check if 12 clicks reached
+      if (slingClickCount >= 12) {
+        slingClickCount = 0;
+        activateSecretManagement();
+      }
+    }
+    
+    // Function to activate secret management mode
+    function activateSecretManagement() {
+      isManagementMode = true;
+      document.getElementById('startBtn').style.display = 'none';
+      document.getElementById('finishBtn').style.display = 'block';
+      
+      // Add visual indication that management mode is active
+      document.querySelector('.description-management-bar').style.border = '2px solid #00ff00';
+      document.querySelector('.description-management-bar').style.boxShadow = '0 0 20px rgba(0, 255, 0, 0.3)';
+      
+      alert('🔓 Secret Management Mode Activated!\n\nYou can now edit product details and photos.\nClick "End Management" when finished.');
+    }
+    
+    // Function to handle photo URL input
+    function handlePhotoUrlInput() {
+      const photoUrlInput = document.getElementById('photoUrlInput');
+      const photoPreview = document.getElementById('photoPreview');
+      const url = photoUrlInput.value.trim();
+      
+      if (url) {
+        photoPreview.src = url;
+        photoPreview.style.display = 'block';
+        photoPreview.onerror = function() {
+          alert('Invalid image URL. Please check the URL and try again.');
+          photoPreview.style.display = 'none';
+        };
+      } else {
+        photoPreview.style.display = 'none';
+      }
+    }
+    
+    // Function to upload photo to GitHub (if needed)
+    async function uploadPhotoToGitHub(file, productId) {
+      try {
+        // This would require server-side implementation
+        // For now, we'll just store the URL
+        console.log('Photo upload would be implemented with GitHub API');
+        return file;
+      } catch (error) {
+        console.error('Error uploading photo:', error);
+        alert('Error uploading photo. Please try again.');
+        return null;
+      }
+    }
     
     // Initialize
     loadProducts();
