@@ -103,6 +103,31 @@ p {
   margin: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.close-management-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: #ff6b35;
+  color: #ffffff;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: none;
+  z-index: 10;
+}
+
+.close-management-btn:hover {
+  background: #e55a2b;
+  box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
+  transform: scale(1.1);
 }
 
 .description-management-bar h3 {
@@ -702,6 +727,58 @@ footer a:hover {
   display: block;
   border: 2px solid #00e5ff;
 }
+
+.management-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.start-btn {
+  background-color: #00ff00;
+  color: #000000;
+}
+
+.start-btn:hover {
+  background-color: #00cc00;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+}
+
+.finish-btn {
+  background-color: #6c5ce7;
+  color: #ffffff;
+}
+
+.finish-btn:hover {
+  background-color: #5b4bd1;
+  box-shadow: 0 0 15px rgba(108, 92, 231, 0.5);
+}
+
+.show-management-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.show-management-btn:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.show-management-btn span {
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
   </style>
 </head>
 <body>
@@ -712,7 +789,8 @@ footer a:hover {
     <p class="date-display" id="currentDate"></p>
   </header>
   
-  <div class="description-management-bar">
+  <div class="description-management-bar" style="display: none;">
+    <button class="close-management-btn" onclick="closeManagementSystem()" id="closeManagementBtn">✕</button>
     <h3>📝 Product Management System 📝</h3>
     <p>Click "Start Management" to begin editing product descriptions and prices. Click on any product to add or edit its details.</p>
     <div class="description-stats">
@@ -724,6 +802,8 @@ footer a:hover {
     <div class="management-buttons">
       <button class="modal-btn start-btn" onclick="startManagement()" id="startBtn">🚀 Start Management</button>
       <button class="modal-btn finish-btn" onclick="finishManagement()" id="finishBtn" style="display: none;">✅ End Management</button>
+      <button class="modal-btn add-btn" onclick="openAddProductModal()" id="addProductBtn" style="display: none;background-color:#00b894;color:#fff;">➕ Add Product</button>
+      <button class="modal-btn export-btn" onclick="exportData()" id="exportBtn" style="display: none;background-color:#f39c12;color:#fff;">📤 Export Data</button>
     </div>
   </div>
   
@@ -766,6 +846,7 @@ footer a:hover {
       <div class="modal-buttons">
         <button class="modal-btn save-btn" onclick="saveProductDetails()">💾 Save Details</button>
         <button class="modal-btn cancel-btn" onclick="closeDescriptionModal()">❌ Cancel</button>
+        <button class="modal-btn delete-btn" onclick="deleteProduct()" style="background-color:#ff3333;color:#fff;">🗑️ Delete Product</button>
       </div>
     </div>
   </div>
@@ -834,6 +915,21 @@ footer a:hover {
     
     <div class="sling-secret">
       <img src="tig.png" alt="Tiger" id="slingSecret" onclick="handleSlingClick()">
+    </div>
+  </div>
+
+  <!-- Add Product Modal -->
+  <div id="addProductModal" class="description-modal" style="display:none;z-index:3000;">
+    <div class="description-modal-content">
+      <h2>Add New Product</h2>
+      <input type="text" id="newProductName" class="photo-upload-input" placeholder="Product Name">
+      <input type="url" id="newProductImage" class="photo-upload-input" placeholder="Image URL">
+      <input type="number" id="newProductPrice" class="photo-upload-input" placeholder="Price (£)" step="0.01" min="0">
+      <textarea id="newProductDescription" class="description-input" placeholder="Description"></textarea>
+      <div class="modal-buttons">
+        <button class="modal-btn save-btn" onclick="addProduct()">➕ Add Product</button>
+        <button class="modal-btn cancel-btn" onclick="closeAddProductModal()">❌ Cancel</button>
+      </div>
     </div>
   </div>
 
@@ -1148,6 +1244,9 @@ footer a:hover {
       isManagementMode = true;
       document.getElementById('startBtn').style.display = 'none';
       document.getElementById('finishBtn').style.display = 'block';
+      document.getElementById('closeManagementBtn').style.display = 'block';
+      document.getElementById('addProductBtn').style.display = 'block';
+      document.getElementById('exportBtn').style.display = 'block';
       
       // Add visual indication that management mode is active
       document.querySelector('.description-management-bar').style.border = '2px solid #00ff00';
@@ -1156,12 +1255,11 @@ footer a:hover {
     
     function finishManagement() {
       isManagementMode = false;
-      document.getElementById('startBtn').style.display = 'block';
-      document.getElementById('finishBtn').style.display = 'none';
       
-      // Remove visual indication
-      document.querySelector('.description-management-bar').style.border = '1px solid rgba(255, 255, 255, 0.1)';
-      document.querySelector('.description-management-bar').style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.3)';
+      // Hide the entire management window
+      document.querySelector('.description-management-bar').style.display = 'none';
+      document.getElementById('addProductBtn').style.display = 'none';
+      document.getElementById('exportBtn').style.display = 'none';
       
       const describedCount = Object.keys(productDescriptions).length;
       const pricedCount = Object.keys(productPrices).length;
@@ -1183,6 +1281,17 @@ footer a:hover {
       // You could also export the data here
       console.log('Product Prices:', productPrices);
       console.log('Product Descriptions:', productDescriptions);
+    }
+    
+    function closeManagementSystem() {
+      isManagementMode = false;
+      
+      // Hide the entire management window
+      document.querySelector('.description-management-bar').style.display = 'none';
+      document.getElementById('addProductBtn').style.display = 'none';
+      document.getElementById('exportBtn').style.display = 'none';
+      
+      alert('Management system closed.');
     }
     
     // Close modal when clicking outside
@@ -1477,7 +1586,12 @@ footer a:hover {
       // Check if 12 clicks reached
       if (slingClickCount >= 12) {
         slingClickCount = 0;
-        activateSecretManagement();
+        const managementBar = document.querySelector('.description-management-bar');
+        if (managementBar.style.display === 'block') {
+          closeManagementSystem();
+        } else {
+          activateSecretManagement();
+        }
       }
     }
     
@@ -1486,12 +1600,18 @@ footer a:hover {
       isManagementMode = true;
       document.getElementById('startBtn').style.display = 'none';
       document.getElementById('finishBtn').style.display = 'block';
+      document.getElementById('closeManagementBtn').style.display = 'block';
+      document.getElementById('addProductBtn').style.display = 'block';
+      document.getElementById('exportBtn').style.display = 'block';
+      
+      // Show the management window
+      document.querySelector('.description-management-bar').style.display = 'block';
       
       // Add visual indication that management mode is active
       document.querySelector('.description-management-bar').style.border = '2px solid #00ff00';
       document.querySelector('.description-management-bar').style.boxShadow = '0 0 20px rgba(0, 255, 0, 0.3)';
       
-      alert('🔓 Secret Management Mode Activated!\n\nYou can now edit product details and photos.\nClick "End Management" when finished.');
+      alert('🔓 Secret Management Mode Activated!\n\nYou can now edit product details and photos.\nClick "End Management" or the X button when finished.');
     }
     
     // Function to handle photo URL input
@@ -1524,6 +1644,122 @@ footer a:hover {
         alert('Error uploading photo. Please try again.');
         return null;
       }
+    }
+    
+    // Function to show management window
+    function showManagementWindow() {
+      document.querySelector('.description-management-bar').style.display = 'block';
+      document.getElementById('showManagementBtn').style.display = 'none';
+    }
+    
+    function deleteProduct() {
+      if (currentProductId === null) return;
+      if (!confirm('Are you sure you want to delete this product?')) return;
+      // Remove from localStorage
+      delete productPrices[currentProductId];
+      delete productDescriptions[currentProductId];
+      delete productPhotos[currentProductId];
+      localStorage.setItem('productPrices', JSON.stringify(productPrices));
+      localStorage.setItem('productDescriptions', JSON.stringify(productDescriptions));
+      localStorage.setItem('productPhotos', JSON.stringify(productPhotos));
+      // Remove from DOM
+      const productCard = document.querySelector(`[data-product-id="${currentProductId}"]`);
+      if (productCard) productCard.remove();
+      closeDescriptionModal();
+      updateDescriptionStats();
+    }
+
+    function openAddProductModal() {
+      document.getElementById('addProductModal').style.display = 'block';
+      document.getElementById('newProductName').value = '';
+      document.getElementById('newProductImage').value = '';
+      document.getElementById('newProductPrice').value = '';
+      document.getElementById('newProductDescription').value = '';
+    }
+
+    function closeAddProductModal() {
+      document.getElementById('addProductModal').style.display = 'none';
+    }
+
+    function addProduct() {
+      const name = document.getElementById('newProductName').value.trim();
+      const image = document.getElementById('newProductImage').value.trim();
+      const price = parseFloat(document.getElementById('newProductPrice').value.trim());
+      const description = document.getElementById('newProductDescription').value.trim();
+      if (!name || !image || isNaN(price)) {
+        alert('Please enter a name, image URL, and price.');
+        return;
+      }
+      // Find next available productId
+      let productId = 0;
+      while (document.querySelector(`[data-product-id="${productId}"]`)) productId++;
+      // Save to localStorage
+      productPrices[productId] = price;
+      productDescriptions[productId] = description;
+      productPhotos[productId] = image;
+      localStorage.setItem('productPrices', JSON.stringify(productPrices));
+      localStorage.setItem('productDescriptions', JSON.stringify(productDescriptions));
+      localStorage.setItem('productPhotos', JSON.stringify(productPhotos));
+      // Add to DOM
+      const gallery = document.getElementById('gallery');
+      const el = document.createElement('div');
+      el.className = 'product';
+      el.dataset.productId = productId;
+      el.innerHTML = `
+        <img src="${image}" alt="${name}">
+        <p>${name}</p>
+        <p class="product-price" id="price-${productId}" style="display: block;">£${price.toFixed(2)}</p>
+        <p class="product-description" id="description-${productId}" style="display: block;">${description}</p>
+        <div class="product-popup" id="popup-${productId}" style="display: block;">
+          <div class="popup-product-name">${name}</div>
+          <div class="popup-product-price" id="popup-price-${productId}">£${price.toFixed(2)}</div>
+          <div class="popup-product-description" id="popup-description-${productId}">${description || 'No description available'}</div>
+          <div class="payment-buttons">
+            <button class="popup-buy-button" onclick="buyProduct(${productId}, '${name}', 'paypal')">💳 Buy Now via PayPal</button>
+            <button class="popup-stripe-button" onclick="buyProduct(${productId}, '${name}', 'stripe')">💳 Buy Now via Stripe</button>
+          </div>
+        </div>
+      `;
+      el.addEventListener('click', () => {
+        if (isManagementMode) {
+          openDescriptionModal(productId, image, name);
+        } else if (productPrices[productId]) {
+          showPaymentOptions(productId, name);
+        }
+      });
+      gallery.appendChild(el);
+      closeAddProductModal();
+      updateDescriptionStats();
+    }
+    
+    function exportData() {
+      const exportData = {
+        productPrices: productPrices,
+        productDescriptions: productDescriptions,
+        productPhotos: productPhotos,
+        exportDate: new Date().toISOString(),
+        totalProducts: Object.keys(productPrices).length
+      };
+      
+      const dataString = JSON.stringify(exportData, null, 2);
+      
+      // Create a popup with the data
+      const popup = window.open('', '_blank', 'width=600,height=400');
+      popup.document.write(`
+        <html>
+          <head><title>Product Data Export</title></head>
+          <body style="font-family: monospace; padding: 20px; background: #1a1a1a; color: #fff;">
+            <h2>📤 Product Data Export</h2>
+            <p><strong>Export Date:</strong> ${new Date().toLocaleString()}</p>
+            <p><strong>Total Products:</strong> ${Object.keys(productPrices).length}</p>
+            <p><strong>Copy this data:</strong></p>
+            <textarea style="width: 100%; height: 300px; background: #2a2a2a; color: #00ff00; border: 1px solid #333; padding: 10px; font-family: monospace;" readonly>${dataString}</textarea>
+            <br><br>
+            <button onclick="navigator.clipboard.writeText(document.querySelector('textarea').value)" style="background: #00ff00; color: #000; padding: 10px 20px; border: none; cursor: pointer;">📋 Copy to Clipboard</button>
+            <button onclick="window.close()" style="background: #ff3333; color: #fff; padding: 10px 20px; border: none; cursor: pointer; margin-left: 10px;">❌ Close</button>
+          </body>
+        </html>
+      `);
     }
     
     // Initialize
