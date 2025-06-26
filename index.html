@@ -88,20 +88,11 @@ h1 {
 }
 
 @keyframes titleGlow {
-  0% { 
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px #ffffff, 0 0 30px #ffffff;
-  }
-  25% { 
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px #ff0000, 0 0 30px #ff0000;
+  0%, 100% { 
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px #00ff00, 0 0 30px #00ff00, 0 0 40px #00ff00;
   }
   50% { 
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px #0066ff, 0 0 30px #0066ff;
-  }
-  75% { 
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px #00ff00, 0 0 30px #00ff00;
-  }
-  100% { 
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px #ffffff, 0 0 30px #ffffff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 25px #00ff00, 0 0 35px #00ff00, 0 0 45px #00ff00;
   }
 }
 
@@ -154,6 +145,13 @@ p {
   margin-bottom: 10px;
 }
 
+.product p {
+  color: #00ff00;
+  font-family: 'Courier New', 'Monaco', 'Terminal', monospace;
+  font-weight: bold;
+  text-shadow: 0 0 5px #00ff00;
+}
+
 .paypal {
   text-align: center;
   margin: 30px;
@@ -193,6 +191,8 @@ p {
   justify-content: center;
   padding: 20px;
   background: rgba(0, 0, 0, 0.2);
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .news-card {
@@ -234,6 +234,20 @@ p {
   font-weight: bold;
 }
 
+.news-title-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.news-title-link:hover {
+  text-decoration: none;
+}
+
+.news-title-link h3:hover {
+  color: #00e5ff;
+  transition: color 0.3s ease;
+}
+
 .news-content p {
   color: #cccccc;
   margin: 0 0 8px 0;
@@ -268,13 +282,114 @@ p {
   background-color: #5b4bd1;
 }
 
+.slingshot-world-card {
+  background: rgba(31, 31, 31, 0.9);
+  border-radius: 10px;
+  padding: 15px;
+  max-width: 350px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease;
+  position: relative;
+}
+
+.slingshot-world-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 255, 0, 0.3);
+}
+
+.slingshot-world-card:hover::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('article.jpg');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: rgba(0, 0, 0, 0.95);
+  z-index: 1000;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.slingshot-world-card:hover::before {
+  content: 'Click to read full article';
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.9);
+  color: #00ff00;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-family: 'Courier New', 'Monaco', 'Terminal', monospace;
+  font-weight: bold;
+  font-size: 14px;
+  z-index: 1001;
+  border: 2px solid #00ff00;
+  text-shadow: 0 0 8px #00ff00;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+}
+
+.slingshot-world-image {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.slingshot-world-content {
+  flex: 1;
+}
+
+.slingshot-world-content h3 {
+  color: #ffffff;
+  margin: 0 0 5px 0;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.slingshot-world-content p {
+  color: #cccccc;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+  font-size: 0.7rem;
+}
+
+.slingshot-world-title-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.slingshot-world-title-link:hover {
+  text-decoration: none;
+}
+
+.slingshot-world-title-link h3:hover {
+  color: #00e5ff;
+  transition: color 0.3s ease;
+}
+
 @media (max-width: 600px) {
-  .news-card {
+  .news-card,
+  .slingshot-world-card {
     flex-direction: column;
     text-align: center;
   }
   
-  .news-image {
+  .news-image,
+  .slingshot-world-image {
     width: 100px;
     height: 100px;
   }
@@ -286,6 +401,7 @@ footer {
   padding: 20px;
   font-size: 0.75rem;
   color: #ffffff;
+  font-family: 'Courier New', 'Monaco', 'Terminal', monospace;
 }
 
 a {
@@ -298,12 +414,28 @@ a:hover {
 }
 
 footer a {
-  color: #ffff00;
+  color: #00ff00;
   font-weight: bold;
+  font-family: 'Courier New', 'Monaco', 'Terminal', monospace;
 }
 
 footer a:hover {
-  color: #ffcc00;
+  color: #00ff00;
+  text-shadow: 0 0 5px #00ff00;
+}
+
+@media (max-width: 600px) {
+  .news-card,
+  .slingshot-world-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .news-image,
+  .slingshot-world-image {
+    width: 100px;
+    height: 100px;
+  }
 }
   </style>
 </head>
@@ -329,13 +461,29 @@ footer a:hover {
   
   <div class="news-section">
     <div class="news-card">
-      <img src="kat.png" alt="Catapult Network" class="news-image">
+      <a href="https://www.theengineer.co.uk/content/opinion/time-to-shake-up-the-catapults/" target="_blank">
+        <img src="kat.png" alt="Catapult Network" class="news-image">
+      </a>
       <div class="news-content">
-        <h3>Catapult Network News</h3>
+        <a href="https://www.theengineer.co.uk/content/opinion/time-to-shake-up-the-catapults/" target="_blank" class="news-title-link">
+          <h3>Catapult Network News</h3>
+        </a>
         <p>Stay updated with the latest developments in the UK's innovation network</p>
         <a href="https://en.wikipedia.org/wiki/Catapult" target="_blank" class="news-link wiki-link">
-          📚 Catapult History & Engineering
+          📚 Catapult Wiki
         </a>
+      </div>
+    </div>
+    
+    <div class="slingshot-world-card">
+      <a href="https://www.slingshotworld.co.uk/" target="_blank">
+        <img src="sling.png" alt="Slingshot World" class="slingshot-world-image">
+      </a>
+      <div class="slingshot-world-content">
+        <a href="https://www.slingshotworld.co.uk/" target="_blank" class="slingshot-world-title-link">
+          <h3>Slingshot World</h3>
+        </a>
+        <p>The Home of British Slingshot Addicts</p>
       </div>
     </div>
   </div>
@@ -403,6 +551,81 @@ footer a:hover {
     // Update date immediately and then every minute
     updateDateTime();
     setInterval(updateDateTime, 60000); // Update every minute
+    
+    // Handle article overlay click to close
+    document.addEventListener('click', function(e) {
+      const slingshotCard = document.querySelector('.slingshot-world-card');
+      if (slingshotCard && slingshotCard.matches(':hover')) {
+        // If clicking on the overlay (not the card itself), close it
+        if (e.target === document.body || e.target.classList.contains('article-overlay')) {
+          slingshotCard.style.setProperty('--show-overlay', 'none');
+        }
+      }
+    });
+    
+    // Add click handler to slingshot world card for better article display
+    document.addEventListener('DOMContentLoaded', function() {
+      const slingshotCard = document.querySelector('.slingshot-world-card');
+      if (slingshotCard) {
+        slingshotCard.addEventListener('click', function(e) {
+          // Prevent the default link behavior when clicking on the card
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Create a full-screen overlay for the article
+          const overlay = document.createElement('div');
+          overlay.className = 'article-overlay';
+          overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('article.jpg');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+          `;
+          
+          // Add close button
+          const closeBtn = document.createElement('div');
+          closeBtn.textContent = 'Click to close';
+          closeBtn.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #00ff00;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', 'Monaco', 'Terminal', monospace;
+            font-weight: bold;
+            z-index: 1001;
+            border: 1px solid #00ff00;
+            text-shadow: 0 0 5px #00ff00;
+            cursor: pointer;
+          `;
+          
+          // Add click handlers to close the overlay
+          overlay.addEventListener('click', function() {
+            document.body.removeChild(overlay);
+            document.body.removeChild(closeBtn);
+          });
+          
+          closeBtn.addEventListener('click', function() {
+            document.body.removeChild(overlay);
+            document.body.removeChild(closeBtn);
+          });
+          
+          document.body.appendChild(overlay);
+          document.body.appendChild(closeBtn);
+        });
+      }
+    });
   </script>
 </body>
 </html>
