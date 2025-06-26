@@ -267,6 +267,40 @@ p {
   border: 2px solid #00e5ff;
 }
 
+.price-input {
+  width: 100%;
+  padding: 12px;
+  margin: 15px 0;
+  border: 2px solid #ff6b35;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  font-size: 1rem;
+  font-family: 'Courier New', 'Monaco', 'Terminal', monospace;
+  text-align: center;
+}
+
+.price-input:focus {
+  outline: none;
+  box-shadow: 0 0 15px rgba(255, 107, 53, 0.5);
+}
+
+.price-label {
+  color: #ff6b35;
+  font-family: 'Courier New', 'Monaco', 'Terminal', monospace;
+  font-weight: bold;
+  margin-bottom: 5px;
+  text-shadow: 0 0 5px #ff6b35;
+}
+
+.description-label {
+  color: #00e5ff;
+  font-family: 'Courier New', 'Monaco', 'Terminal', monospace;
+  font-weight: bold;
+  margin-bottom: 5px;
+  text-shadow: 0 0 5px #00e5ff;
+}
+
 .description-input {
   width: 100%;
   padding: 12px;
@@ -618,6 +652,33 @@ footer a:hover {
     height: 100px;
   }
 }
+
+.management-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.start-btn {
+  background-color: #00ff00;
+  color: #000000;
+}
+
+.start-btn:hover {
+  background-color: #00cc00;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+}
+
+.finish-btn {
+  background-color: #6c5ce7;
+  color: #ffffff;
+}
+
+.finish-btn:hover {
+  background-color: #5b4bd1;
+  box-shadow: 0 0 15px rgba(108, 92, 231, 0.5);
+}
   </style>
 </head>
 <body>
@@ -629,14 +690,18 @@ footer a:hover {
   </header>
   
   <div class="description-management-bar">
-    <h3>📝 Product Description Manager 📝</h3>
-    <p>Click on any product to add or edit its description. Use the Finish button when done.</p>
+    <h3>📝 Product Management System 📝</h3>
+    <p>Click "Start Management" to begin editing product descriptions and prices. Click on any product to add or edit its details.</p>
     <div class="description-stats">
       <div class="description-stat">Products with descriptions: <span id="describedCount">0</span></div>
+      <div class="description-stat">Products with prices: <span id="pricedCount">0</span></div>
       <div class="description-stat">Total products: <span id="totalCount">0</span></div>
       <div class="description-stat">Completion: <span id="completionPercent">0%</span></div>
     </div>
-    <button class="modal-btn finish-btn" onclick="finishDescriptions()">✅ Finish Descriptions</button>
+    <div class="management-buttons">
+      <button class="modal-btn start-btn" onclick="startManagement()" id="startBtn">🚀 Start Management</button>
+      <button class="modal-btn finish-btn" onclick="finishManagement()" id="finishBtn" style="display: none;">✅ End Management</button>
+    </div>
   </div>
   
   <div class="paypal">
@@ -655,12 +720,22 @@ footer a:hover {
   <!-- Description Modal -->
   <div id="descriptionModal" class="description-modal">
     <div class="description-modal-content">
-      <h2>Add Product Description</h2>
+      <h2>Add Product Details</h2>
       <img id="modalProductImage" src="" alt="Product">
       <p id="modalProductName"></p>
-      <textarea id="descriptionInput" class="description-input" placeholder="Enter a detailed description of this product..."></textarea>
+      
+      <div class="price-section">
+        <label for="priceInput" class="price-label">💰 Price (£)</label>
+        <input type="number" id="priceInput" class="price-input" placeholder="0.00" step="0.01" min="0">
+      </div>
+      
+      <div class="description-section">
+        <label for="descriptionInput" class="description-label">📝 Description</label>
+        <textarea id="descriptionInput" class="description-input" placeholder="Enter a detailed description of this product..."></textarea>
+      </div>
+      
       <div class="modal-buttons">
-        <button class="modal-btn save-btn" onclick="saveDescription()">💾 Save Description</button>
+        <button class="modal-btn save-btn" onclick="saveProductDetails()">💾 Save Details</button>
         <button class="modal-btn cancel-btn" onclick="closeDescriptionModal()">❌ Cancel</button>
       </div>
     </div>
@@ -707,6 +782,7 @@ footer a:hover {
     let productPrices = {};
     let productDescriptions = {};
     let currentProductId = null;
+    let isManagementMode = false;
     
     async function loadProducts() {
       try {
@@ -734,7 +810,11 @@ footer a:hover {
           `;
           
           // Add click event listener for description management
-          el.addEventListener('click', () => openDescriptionModal(index, file.download_url, displayName));
+          el.addEventListener('click', () => {
+            if (isManagementMode) {
+              openDescriptionModal(index, file.download_url, displayName);
+            }
+          });
           
           gallery.appendChild(el);
         });
@@ -799,12 +879,14 @@ footer a:hover {
       document.getElementById('modalProductImage').src = imageUrl;
       document.getElementById('modalProductName').textContent = productName;
       
-      // Set current description if it exists
+      // Set current price and description if they exist
+      const currentPrice = productPrices[productId] || '';
       const currentDescription = productDescriptions[productId] || '';
+      document.getElementById('priceInput').value = currentPrice;
       document.getElementById('descriptionInput').value = currentDescription;
       
       document.getElementById('descriptionModal').style.display = 'block';
-      document.getElementById('descriptionInput').focus();
+      document.getElementById('priceInput').focus();
     }
     
     function closeDescriptionModal() {
@@ -812,11 +894,19 @@ footer a:hover {
       currentProductId = null;
     }
     
-    function saveDescription() {
+    function saveProductDetails() {
+      const priceInput = document.getElementById('priceInput');
       const descriptionInput = document.getElementById('descriptionInput');
+      const price = parseFloat(priceInput.value.trim());
       const description = descriptionInput.value.trim();
       
       if (currentProductId !== null) {
+        if (price && !isNaN(price)) {
+          productPrices[currentProductId] = price;
+        } else {
+          delete productPrices[currentProductId];
+        }
+        
         if (description) {
           productDescriptions[currentProductId] = description;
         } else {
@@ -824,19 +914,28 @@ footer a:hover {
         }
         
         // Update the product display
-        const productElement = document.querySelector(`#description-${currentProductId}`);
-        const productCard = productElement.closest('.product');
+        const priceElement = document.querySelector(`#price-${currentProductId}`);
+        const descriptionElement = document.querySelector(`#description-${currentProductId}`);
+        const productCard = priceElement.closest('.product');
+        
+        if (price && !isNaN(price)) {
+          priceElement.textContent = `£${price.toFixed(2)}`;
+          priceElement.style.display = 'block';
+        } else {
+          priceElement.style.display = 'none';
+        }
         
         if (description) {
-          productElement.textContent = description;
-          productElement.style.display = 'block';
+          descriptionElement.textContent = description;
+          descriptionElement.style.display = 'block';
           productCard.classList.add('has-description');
         } else {
-          productElement.style.display = 'none';
+          descriptionElement.style.display = 'none';
           productCard.classList.remove('has-description');
         }
         
         // Save to localStorage
+        localStorage.setItem('productPrices', JSON.stringify(productPrices));
         localStorage.setItem('productDescriptions', JSON.stringify(productDescriptions));
         
         // Update stats
@@ -850,30 +949,53 @@ footer a:hover {
       const products = document.querySelectorAll('.product');
       const totalCount = products.length;
       const describedCount = Object.keys(productDescriptions).length;
-      const completionPercent = totalCount > 0 ? Math.round((describedCount / totalCount) * 100) : 0;
+      const pricedCount = Object.keys(productPrices).length;
+      const completionPercent = totalCount > 0 ? Math.round(((describedCount + pricedCount) / (totalCount * 2)) * 100) : 0;
       
       document.getElementById('totalCount').textContent = totalCount;
       document.getElementById('describedCount').textContent = describedCount;
+      document.getElementById('pricedCount').textContent = pricedCount;
       document.getElementById('completionPercent').textContent = `${completionPercent}%`;
     }
     
-    function finishDescriptions() {
+    function startManagement() {
+      isManagementMode = true;
+      document.getElementById('startBtn').style.display = 'none';
+      document.getElementById('finishBtn').style.display = 'block';
+      
+      // Add visual indication that management mode is active
+      document.querySelector('.description-management-bar').style.border = '2px solid #00ff00';
+      document.querySelector('.description-management-bar').style.boxShadow = '0 0 20px rgba(0, 255, 0, 0.3)';
+    }
+    
+    function finishManagement() {
+      isManagementMode = false;
+      document.getElementById('startBtn').style.display = 'block';
+      document.getElementById('finishBtn').style.display = 'none';
+      
+      // Remove visual indication
+      document.querySelector('.description-management-bar').style.border = '1px solid rgba(255, 255, 255, 0.1)';
+      document.querySelector('.description-management-bar').style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.3)';
+      
       const describedCount = Object.keys(productDescriptions).length;
+      const pricedCount = Object.keys(productPrices).length;
       const totalCount = document.querySelectorAll('.product').length;
       
-      if (describedCount === 0) {
-        alert('No descriptions have been added yet. Click on products to add their descriptions.');
+      if (describedCount === 0 && pricedCount === 0) {
+        alert('No product details have been added yet. Click "Start Management" and then click on products to add their details.');
         return;
       }
       
-      const message = `Description Management Complete!\n\n` +
+      const message = `Product Management Complete!\n\n` +
                      `Products with descriptions: ${describedCount}/${totalCount}\n` +
-                     `Completion: ${Math.round((describedCount / totalCount) * 100)}%\n\n` +
-                     `Descriptions have been saved to your browser's local storage.`;
+                     `Products with prices: ${pricedCount}/${totalCount}\n` +
+                     `Completion: ${Math.round(((describedCount + pricedCount) / (totalCount * 2)) * 100)}%\n\n` +
+                     `All details have been saved to your browser's local storage.`;
       
       alert(message);
       
       // You could also export the data here
+      console.log('Product Prices:', productPrices);
       console.log('Product Descriptions:', productDescriptions);
     }
     
