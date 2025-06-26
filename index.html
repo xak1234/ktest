@@ -82,13 +82,46 @@ h1 {
   margin: 0;
   letter-spacing: 2px;
   color: #ffffff;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 0, 0, 0.5);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
   font-weight: 900;
+  animation: titleGlow 4s ease-in-out infinite;
+}
+
+@keyframes titleGlow {
+  0% { 
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px #ffffff, 0 0 30px #ffffff;
+  }
+  25% { 
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px #ff0000, 0 0 30px #ff0000;
+  }
+  50% { 
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px #0066ff, 0 0 30px #0066ff;
+  }
+  75% { 
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px #00ff00, 0 0 30px #00ff00;
+  }
+  100% { 
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px #ffffff, 0 0 30px #ffffff;
+  }
 }
 
 p {
   font-size: 1.1rem;
   color: #cccccc;
+}
+
+.tagline-small {
+  font-size: 0.8rem;
+  color: #000000;
+  margin: 5px 0 0 0;
+  font-style: italic;
+}
+
+.date-display {
+  font-size: 0.75rem;
+  color: #333333;
+  margin: 3px 0 0 0;
+  font-weight: normal;
 }
 
 .gallery {
@@ -124,6 +157,10 @@ p {
 .paypal {
   text-align: center;
   margin: 30px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .paypal a {
@@ -135,10 +172,112 @@ p {
   border-radius: 8px;
   text-decoration: none;
   transition: background-color 0.3s ease;
+  display: inline-block;
 }
 
 .paypal a:hover {
   background-color: #ffb347;
+}
+
+.paypal a:nth-child(2) {
+  background-color: #0066cc;
+  color: #ffffff;
+}
+
+.paypal a:nth-child(2):hover {
+  background-color: #004499;
+}
+
+.news-section {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.news-card {
+  background: rgba(31, 31, 31, 0.9);
+  border-radius: 10px;
+  padding: 15px;
+  max-width: 350px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.news-card:hover {
+  transform: translateY(-3px);
+}
+
+.news-image {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.news-content {
+  flex: 1;
+}
+
+.news-content h3 {
+  color: #ffffff;
+  margin: 0 0 5px 0;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.news-content p {
+  color: #cccccc;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+  font-size: 0.7rem;
+}
+
+.news-link {
+  background-color: #ff6b35;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+  display: inline-block;
+  transition: background-color 0.3s ease;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  font-size: 0.7rem;
+}
+
+.news-link:hover {
+  background-color: #e55a2b;
+  color: #ffffff;
+}
+
+.wiki-link {
+  background-color: #6c5ce7;
+}
+
+.wiki-link:hover {
+  background-color: #5b4bd1;
+}
+
+@media (max-width: 600px) {
+  .news-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .news-image {
+    width: 100px;
+    height: 100px;
+  }
 }
 
 footer {
@@ -171,16 +310,36 @@ footer a:hover {
 <body>
   <header>
     <h1>Kieran's Catapult Bands</h1>
-    <p>Premium Slingshot Gear for Next‑Gen Marksmen 🎯</p>
+    <p>🎯 Premium Slingshot Gear for Next‑Gen Marksmen 🎯</p>
+    <p class="tagline-small">loving catapults since 2015</p>
+    <p class="date-display" id="currentDate"></p>
   </header>
   <div class="paypal">
     <a href="https://www.paypal.com/paypalme/kieranscatapult" target="_blank">
-      💳 Support or Order via PayPal
+      💳 Orders via PayPal 💳
+    </a>
+    <a href="https://www.ebay.co.uk/str/kieranscatapultbandslimited?_tab=feedback" target="_blank">
+      ⭐⭐⭐⭐⭐ View eBay Feedback
     </a>
   </div>
+  
   <div class="gallery" id="gallery">
     <!-- product cards will be inserted here -->
   </div>
+  
+  <div class="news-section">
+    <div class="news-card">
+      <img src="kat.png" alt="Catapult Network" class="news-image">
+      <div class="news-content">
+        <h3>Catapult Network News</h3>
+        <p>Stay updated with the latest developments in the UK's innovation network</p>
+        <a href="https://en.wikipedia.org/wiki/Catapult" target="_blank" class="news-link wiki-link">
+          📚 Catapult History & Engineering
+        </a>
+      </div>
+    </div>
+  </div>
+  
   <footer>
     <p>Find us on <a href="https://www.facebook.com/kieranleekcb" target="_blank">Facebook</a> | 
        <a href="https://www.ebay.co.uk/str/kieranscatapultbandslimited" target="_blank">eBay</a>
@@ -218,6 +377,32 @@ footer a:hover {
     }
 
     loadProducts();
+    
+    // Display current date with sun/moon icon
+    function updateDateTime() {
+      const now = new Date();
+      const hour = now.getHours();
+      
+      // Determine if it's day or night
+      const isDaytime = hour >= 6 && hour < 18; // 6 AM to 6 PM is daytime
+      const timeIcon = isDaytime ? '☀️' : '🌙';
+      
+      // Format the date
+      const options = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      };
+      const formattedDate = now.toLocaleDateString('en-US', options);
+      
+      // Update the date display
+      document.getElementById('currentDate').textContent = `${timeIcon} ${formattedDate}`;
+    }
+    
+    // Update date immediately and then every minute
+    updateDateTime();
+    setInterval(updateDateTime, 60000); // Update every minute
   </script>
 </body>
 </html>
