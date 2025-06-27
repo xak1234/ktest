@@ -1,9 +1,32 @@
 {
   "productPrices": {
-    "0": 10.99
+    "0": 123,
+    "1": 23,
+    "2": 44,
+    "18": 55,
+    "20": 222,
+    "21": 55,
+    "22": 11.5,
+    "23": 655,
+    "24": 12,
+    "25": 14,
+    "26": 99,
+    "27": 12,
+    "28": 55,
+    "29": 13
   },
   "productDescriptions": {
-    "0": "Test Product"
+    "0": ".6 KCB x 3",
+    "1": ".8 Red Shot x 3",
+    "2": ".9 KCB x 3",
+    "18": "GZK.72 x 3",
+    "20": "KCB .65 x 3",
+    "21": "KCB Rolls of Band",
+    "22": "Kierans Catapult YOYO",
+    "23": "Redshot .85 x 3",
+    "26": "Sheshou 1mm x 3",
+    "28": "assssed",
+    "29": "wanking toilet"
   },
   "productPhotos": {}
 }
