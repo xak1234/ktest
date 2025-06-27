@@ -229,6 +229,94 @@ p {
   box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
 }
 
+.hover-description {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(31, 31, 31, 0.95);
+  border: 2px solid #00e5ff;
+  border-radius: 8px;
+  padding: 15px;
+  max-width: 300px;
+  z-index: 1000;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.hover-content {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(31, 31, 31, 0.95);
+  border: 2px solid #00e5ff;
+  border-radius: 8px;
+  padding: 15px;
+  max-width: 300px;
+  z-index: 1000;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.hover-description-content {
+  color: #00e5ff;
+  font-family: 'Courier New', 'Monaco', 'Terminal', monospace;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  text-shadow: 0 0 5px #00e5ff;
+  word-wrap: break-word;
+}
+
+.hover-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.hover-buy-button,
+.hover-stripe-button {
+  background-color: #ff6b35;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: 'Courier New', 'Monaco', 'Terminal', monospace;
+  font-size: 0.8rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-shadow: 0 0 5px #ff6b35;
+}
+
+.hover-buy-button:hover,
+.hover-stripe-button:hover {
+  background-color: #e55a2b;
+  box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
+  transform: scale(1.05);
+}
+
+.hover-stripe-button {
+  background-color: #6c5ce7;
+  text-shadow: 0 0 5px #6c5ce7;
+}
+
+.hover-stripe-button:hover {
+  background-color: #5b4bd1;
+  box-shadow: 0 0 10px rgba(108, 92, 231, 0.5);
+}
+
+.product:hover .hover-content {
+  opacity: 1;
+}
+
 .description-modal {
   display: none;
   position: fixed;
@@ -780,6 +868,95 @@ footer a:hover {
   font-size: 1.5rem;
   font-weight: bold;
 }
+
+.product-detail-card {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(31, 31, 31, 0.98);
+  border: 2px solid #00e5ff;
+  border-radius: 16px;
+  box-shadow: 0 0 40px rgba(0, 229, 255, 0.7);
+  z-index: 4000 !important;
+  min-width: 240px;
+  max-width: 70vw;
+  padding: 0;
+  animation: fadeIn 0.3s;
+}
+.detail-card-content {
+  padding: 18px 12px 12px 12px;
+  position: relative;
+  text-align: center;
+}
+.detail-product-name {
+  font-size: 1.1rem;
+  color: #00e5ff;
+  font-family: 'Courier New', 'Monaco', 'Terminal', monospace;
+  font-weight: bold;
+  margin-bottom: 8px;
+  text-shadow: 0 0 8px #00e5ff;
+}
+.detail-product-description {
+  color: #cccccc;
+  font-size: 0.95rem;
+  margin-bottom: 14px;
+  font-family: 'Segoe UI', sans-serif;
+  text-shadow: 0 0 4px #00e5ff44;
+}
+.detail-payment-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.detail-buy-button, .detail-stripe-button {
+  background-color: #ff6b35;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 0;
+  font-size: 1rem;
+  font-family: 'Courier New', 'Monaco', 'Terminal', monospace;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 0 10px #ff6b3555;
+}
+.detail-stripe-button {
+  background-color: #6c5ce7;
+  text-shadow: 0 0 5px #6c5ce7;
+}
+.detail-buy-button:hover {
+  background-color: #e55a2b;
+}
+.detail-stripe-button:hover {
+  background-color: #5b4bd1;
+}
+.detail-close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ff6b35;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+  z-index: 10;
+}
+.detail-close-button:hover {
+  background: #e55a2b;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -60%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
   </style>
 </head>
 <body>
@@ -805,6 +982,7 @@ footer a:hover {
       <button class="modal-btn finish-btn" onclick="finishManagement()" id="finishBtn" style="display: none;">✅ End Management</button>
       <button class="modal-btn add-btn" onclick="openAddProductModal()" id="addProductBtn" style="display: none;background-color:#00b894;color:#fff;">➕ Add Product</button>
       <button class="modal-btn export-btn" onclick="exportData()" id="exportBtn" style="display: none;background-color:#f39c12;color:#fff;">📤 Export Data</button>
+      <button class="modal-btn refresh-btn" onclick="refreshData()" id="refreshBtn" style="display: none;background-color:#3498db;color:#fff;">🔄 Refresh Data</button>
     </div>
   </div>
   
@@ -984,23 +1162,34 @@ footer a:hover {
             <p>${displayName}</p>
             <p class="product-price" id="price-${index}">£0.00</p>
             <p class="product-description" id="description-${index}" style="display: none;"></p>
-            <div class="product-popup" id="popup-${index}" style="display: none;">
-              <div class="popup-product-name">${displayName}</div>
-              <div class="popup-product-price" id="popup-price-${index}">£0.00</div>
-              <div class="popup-product-description" id="popup-description-${index}">No description available</div>
-              <div class="payment-buttons">
-                <button class="popup-buy-button" onclick="buyProduct(${index}, '${displayName}', 'paypal')">
-                  💳 Buy Now via PayPal
-                </button>
-                <button class="popup-stripe-button" onclick="buyProduct(${index}, '${displayName}', 'stripe')">
-                  💳 Buy Now via Stripe
-                </button>
+            <div class="product-detail-card" id="detail-card-${index}" style="display: none;">
+              <div class="detail-card-content">
+                <div class="detail-product-name">${displayName}</div>
+                <div class="detail-product-description" id="detail-description-${index}"></div>
+                <div class="detail-payment-buttons">
+                  <button class="detail-buy-button" onclick="buyProduct(${index}, '${displayName}', 'paypal')">
+                    💳 Buy Now via PayPal
+                  </button>
+                  <button class="detail-stripe-button" onclick="buyProduct(${index}, '${displayName}', 'stripe')">
+                    💳 Buy Now via Stripe
+                  </button>
+                </div>
+                <button class="detail-close-button" onclick="closeDetailCard(${index}, event)">✕</button>
               </div>
+            </div>
+            <div class="hover-content" id="hover-content-${index}">
             </div>
           `;
           
+          
           // Add click event listener for description management
-          el.addEventListener('click', () => {
+          el.addEventListener('click', (e) => {
+            // Only trigger if not clicking inside the detail card
+            const detailCard = document.getElementById(`detail-card-${index}`);
+            if (detailCard && detailCard.contains(e.target)) {
+              // Click was inside the detail card, do nothing
+              return;
+            }
             if (isManagementMode) {
               openDescriptionModal(index, file.download_url, displayName);
             } else if (productPrices[index]) {
@@ -1028,6 +1217,7 @@ footer a:hover {
     // Load saved data from the backend
     async function loadSavedData() {
       try {
+        console.log('Loading saved data from backend...');
         const response = await fetch(API_URL);
         console.log('Response status:', response.status);
         console.log('Response headers:', response.headers);
@@ -1048,15 +1238,32 @@ footer a:hover {
           productPhotos = {};
         } else {
           const data = JSON.parse(responseText);
+          console.log('Parsed data from GitHub:', {
+            pricesCount: Object.keys(data.productPrices || {}).length,
+            descriptionsCount: Object.keys(data.productDescriptions || {}).length,
+            photosCount: Object.keys(data.productPhotos || {}).length,
+            prices: data.productPrices,
+            descriptions: data.productDescriptions,
+            photos: data.productPhotos
+          });
+          
           productPrices = data.productPrices || {};
           productDescriptions = data.productDescriptions || {};
           productPhotos = data.productPhotos || {};
         }
 
+        console.log('About to display data:', {
+          localPricesCount: Object.keys(productPrices).length,
+          localDescriptionsCount: Object.keys(productDescriptions).length,
+          localPhotosCount: Object.keys(productPhotos).length
+        });
+
         displayPrices();
         displayDescriptions();
         displayPhotos();
         updateDescriptionStats();
+        
+        console.log('Data loading and display complete');
       } catch (error) {
         console.error('Error loading saved data:', error);
         console.log('Using default empty data due to error');
@@ -1073,50 +1280,85 @@ footer a:hover {
     
     // Display prices on products
     function displayPrices() {
+      console.log('Displaying prices for products...');
       const allProducts = document.querySelectorAll('.product');
+      console.log('Found products:', allProducts.length);
+      
       allProducts.forEach(product => {
         const productId = product.dataset.productId;
         const productElement = product.querySelector(`#price-${productId}`);
         const popupElement = product.querySelector(`#popup-${productId}`);
-        const popupPriceElement = product.querySelector(`#popup-price-${productId}`);
 
         if (productPrices[productId] && !isNaN(productPrices[productId])) {
           const price = parseFloat(productPrices[productId]);
           productElement.textContent = `£${price.toFixed(2)}`;
           product.classList.add('has-price');
-          if (popupElement && popupPriceElement) {
+          if (popupElement) {
             popupElement.style.display = 'block';
-            popupPriceElement.textContent = `£${price.toFixed(2)}`;
           }
+          console.log(`Product ${productId}: Price set to £${price.toFixed(2)}`);
         } else {
           productElement.textContent = '£0.00';
           product.classList.remove('has-price');
           if (popupElement) {
             popupElement.style.display = 'none';
           }
+          console.log(`Product ${productId}: No price set, showing £0.00`);
         }
       });
+      console.log('Price display complete');
     }
     
     // Display descriptions on products
     function displayDescriptions() {
-      Object.keys(productDescriptions).forEach(productId => {
-        const description = productDescriptions[productId];
+      console.log('Displaying descriptions for products...');
+      const allProducts = document.querySelectorAll('.product');
+      
+      allProducts.forEach(product => {
+        const productId = product.dataset.productId;
+        const description = productDescriptions[productId] || '';
         const productElement = document.querySelector(`#description-${productId}`);
-        const productCard = productElement.closest('.product');
-        const popupDescriptionElement = document.querySelector(`#popup-description-${productId}`);
+        const productCard = productElement?.closest('.product');
+        const hoverDescriptionElement = document.querySelector(`#hover-description-content-${productId}`);
+        const hoverContent = document.querySelector(`#hover-content-${productId}`);
         
         if (productElement && productCard) {
-          productElement.textContent = description;
-          productElement.style.display = 'block';
-          productCard.classList.add('has-description');
-          
-          // Update popup description
-          if (popupDescriptionElement) {
-            popupDescriptionElement.textContent = description;
+          if (description && description.trim()) {
+            productElement.textContent = description;
+            productElement.style.display = 'block';
+            productCard.classList.add('has-description');
+            
+            // Update hover description and show hover content
+            if (hoverDescriptionElement) {
+              hoverDescriptionElement.textContent = description;
+            }
+            
+            if (hoverContent) {
+              hoverContent.style.display = 'block';
+            }
+            
+            console.log(`Product ${productId}: Description displayed`);
+          } else {
+            // Hide description elements if no description
+            productElement.style.display = 'none';
+            productCard.classList.remove('has-description');
+            
+            if (hoverDescriptionElement) {
+              hoverDescriptionElement.textContent = '';
+            }
+            
+            // Hide hover content for products without descriptions
+            if (hoverContent) {
+              hoverContent.style.display = 'none';
+            }
+            
+            console.log(`Product ${productId}: No description, hiding elements`);
           }
+        } else {
+          console.warn(`Product ${productId}: Could not find description element`);
         }
       });
+      console.log('Description display complete');
     }
     
     // Display photos on products
@@ -1214,9 +1456,8 @@ footer a:hover {
           productCard.classList.add('has-price');
           
           // Update popup
-          if (popupElement && popupPriceElement) {
+          if (popupElement) {
             popupElement.style.display = 'block';
-            popupPriceElement.textContent = `£${price.toFixed(2)}`;
           }
         } else {
           priceElement.textContent = '£0.00';
@@ -1234,17 +1475,27 @@ footer a:hover {
           descriptionElement.style.display = 'block';
           productCard.classList.add('has-description');
           
-          // Update popup description
-          if (popupDescriptionElement) {
-            popupDescriptionElement.textContent = description;
+          // Update hover description and show hover content
+          const hoverDescriptionElement = document.querySelector(`#hover-description-content-${currentProductId}`);
+          const hoverContent = document.querySelector(`#hover-content-${currentProductId}`);
+          if (hoverDescriptionElement) {
+            hoverDescriptionElement.textContent = description;
+          }
+          if (hoverContent) {
+            hoverContent.style.display = 'block';
           }
         } else {
           descriptionElement.style.display = 'none';
           productCard.classList.remove('has-description');
           
-          // Reset popup description
-          if (popupDescriptionElement) {
-            popupDescriptionElement.textContent = 'No description available';
+          // Reset hover description and hide hover content
+          const hoverDescriptionElement = document.querySelector(`#hover-description-content-${currentProductId}`);
+          const hoverContent = document.querySelector(`#hover-content-${currentProductId}`);
+          if (hoverDescriptionElement) {
+            hoverDescriptionElement.textContent = '';
+          }
+          if (hoverContent) {
+            hoverContent.style.display = 'none';
           }
         }
         
@@ -1278,6 +1529,7 @@ footer a:hover {
       document.getElementById('closeManagementBtn').style.display = 'block';
       document.getElementById('addProductBtn').style.display = 'block';
       document.getElementById('exportBtn').style.display = 'block';
+      document.getElementById('refreshBtn').style.display = 'block';
       
       // Add visual indication that management mode is active
       document.querySelector('.description-management-bar').style.border = '2px solid #00ff00';
@@ -1437,7 +1689,7 @@ footer a:hover {
     // Function to handle buying a product
     function buyProduct(productId, productName, paymentMethod = 'paypal') {
       const price = productPrices[productId];
-      const description = productDescriptions[productId] || 'No description available';
+      const description = productDescriptions[productId] || '';
       
       if (!price) {
         alert('This product is not available for purchase yet.');
@@ -1585,15 +1837,21 @@ footer a:hover {
     // Function to show payment options
     function showPaymentOptions(productId, productName) {
       const price = productPrices[productId];
-      const description = productDescriptions[productId] || 'No description available';
+      const description = productDescriptions[productId] || '';
       
       if (!price) {
         alert('This product is not available for purchase yet.');
         return;
       }
       
-      // For now, default to PayPal. You could create a payment method selection modal here
-      buyProduct(productId, productName, 'paypal');
+      // Show the detail card with payment options
+      const detailCard = document.getElementById(`detail-card-${productId}`);
+      const detailDescription = document.getElementById(`detail-description-${productId}`);
+      
+      if (detailCard && detailDescription) {
+        detailDescription.textContent = description;
+        detailCard.style.display = 'block';
+      }
     }
     
     // Function to handle sling image clicks
@@ -1742,15 +2000,19 @@ footer a:hover {
         <img src="${image}" alt="${name}">
         <p>${name}</p>
         <p class="product-price" id="price-${productId}" style="display: block;">£${price.toFixed(2)}</p>
-        <p class="product-description" id="description-${productId}" style="display: block;">${description || 'No description available'}</p>
-        <div class="product-popup" id="popup-${productId}" style="display: block;">
-          <div class="popup-product-name">${name}</div>
-          <div class="popup-product-price" id="popup-price-${productId}">£${price.toFixed(2)}</div>
-          <div class="popup-product-description" id="popup-description-${productId}">${description || 'No description available'}</div>
-          <div class="payment-buttons">
-            <button class="popup-buy-button" onclick="buyProduct(${productId}, '${name}', 'paypal')">💳 Buy Now via PayPal</button>
-            <button class="popup-stripe-button" onclick="buyProduct(${productId}, '${name}', 'stripe')">💳 Buy Now via Stripe</button>
+        <p class="product-description" id="description-${productId}" style="display: block;">${description || ''}</p>
+        <div class="product-detail-card" id="detail-card-${productId}" style="display: none;">
+          <div class="detail-card-content">
+            <div class="detail-product-name">${name}</div>
+            <div class="detail-product-description" id="detail-description-${productId}">${description || ''}</div>
+            <div class="detail-payment-buttons">
+              <button class="detail-buy-button" onclick="buyProduct(${productId}, '${name}', 'paypal')">💳 Buy Now via PayPal</button>
+              <button class="detail-stripe-button" onclick="buyProduct(${productId}, '${name}', 'stripe')">💳 Buy Now via Stripe</button>
+            </div>
+            <button class="detail-close-button" onclick="closeDetailCard(${productId})">✕</button>
           </div>
+        </div>
+        <div class="hover-content" id="hover-content-${productId}">
         </div>
       `;
       el.addEventListener('click', () => {
@@ -1869,6 +2131,12 @@ footer a:hover {
         }
     }
     
+    // Manual refresh function to reload data from GitHub
+    async function refreshData() {
+      console.log('Manual refresh triggered...');
+      await loadSavedData();
+    }
+    
     // Test backend connectivity
     async function testBackend() {
         try {
@@ -1890,6 +2158,15 @@ footer a:hover {
     loadProducts();
     // Test backend on page load
     testBackend();
+    
+    // Function to close detail card
+    function closeDetailCard(productId, event) {
+      if (event) event.stopPropagation();
+      const detailCard = document.getElementById(`detail-card-${productId}`);
+      if (detailCard) {
+        detailCard.style.display = 'none';
+      }
+    }
   </script>
 </body>
 </html>
