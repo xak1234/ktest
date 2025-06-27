@@ -1305,7 +1305,7 @@ footer a:hover {
                      `Products with descriptions: ${describedCount}/${totalCount}\n` +
                      `Products with prices: ${pricedCount}/${totalCount}\n` +
                      `Completion: ${Math.round(((describedCount + pricedCount) / (totalCount * 2)) * 100)}%\n\n` +
-                     `All details have been saved to your browser's local storage.`;
+                     `All details have been saved to your GitHub repository.`;
       
       alert(message);
       
@@ -1803,6 +1803,14 @@ footer a:hover {
                 productDescriptions,
                 productPhotos
             };
+            
+            console.log('Saving data to backend:', {
+                pricesCount: Object.keys(productPrices).length,
+                descriptionsCount: Object.keys(productDescriptions).length,
+                photosCount: Object.keys(productPhotos).length,
+                totalDataSize: JSON.stringify(dataToSave).length
+            });
+            
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
@@ -1810,14 +1818,54 @@ footer a:hover {
                 },
                 body: JSON.stringify(dataToSave)
             });
+            
+            console.log('Backend response status:', response.status);
+            
             if (!response.ok) {
                 const errorText = await response.text();
+                console.error('Backend error response:', errorText);
                 throw new Error(`Server error: ${response.status} - ${errorText}`);
             }
-            console.log('Data saved successfully.');
+            
+            const responseText = await response.text();
+            console.log('Backend success response:', responseText);
+            console.log('Data saved successfully to GitHub repository.');
+            
+            // Verify the save by reloading data
+            await verifyDataSave();
+            
         } catch (error) {
             console.error('Error saving data:', error);
-            alert(`Failed to save data: ${error.message}\n\nPlease check that the backend service is running.`);
+            alert(`Failed to save data: ${error.message}\n\nPlease check that the backend service is running and your GitHub token is configured correctly.`);
+        }
+    }
+    
+    // Verify that data was actually saved to GitHub
+    async function verifyDataSave() {
+        try {
+            console.log('Verifying data save...');
+            const response = await fetch(API_URL);
+            const savedData = await response.json();
+            
+            console.log('Verified saved data:', {
+                pricesCount: Object.keys(savedData.productPrices || {}).length,
+                descriptionsCount: Object.keys(savedData.productDescriptions || {}).length,
+                photosCount: Object.keys(savedData.productPhotos || {}).length
+            });
+            
+            // Check if our data matches what was saved
+            const pricesMatch = JSON.stringify(productPrices) === JSON.stringify(savedData.productPrices || {});
+            const descriptionsMatch = JSON.stringify(productDescriptions) === JSON.stringify(savedData.productDescriptions || {});
+            const photosMatch = JSON.stringify(productPhotos) === JSON.stringify(savedData.productPhotos || {});
+            
+            if (pricesMatch && descriptionsMatch && photosMatch) {
+                console.log('✅ Data verification successful - all data saved correctly');
+            } else {
+                console.warn('⚠️ Data verification failed - saved data does not match local data');
+            }
+            
+        } catch (error) {
+            console.error('Error verifying data save:', error);
         }
     }
     
