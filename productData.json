@@ -1,10 +1,11 @@
 {
   "productPrices": {
-    "25": 12,
+    "24": 12,
     "28": 12,
     "29": 13
   },
   "productDescriptions": {
+    "24": "tytytyt",
     "28": "test",
     "29": "erere"
   },
