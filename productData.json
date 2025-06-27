@@ -1,5 +1,6 @@
 {
   "productPrices": {
+    "22": 22,
     "24": 12,
     "25": 14,
     "26": 15,
@@ -8,6 +9,7 @@
     "29": 13
   },
   "productDescriptions": {
+    "22": "Plopsters Catapult Band KCB 7 x 3",
     "26": "Shezhou 1mm x 3"
   },
   "productPhotos": {}
