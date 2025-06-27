@@ -1,5 +1,6 @@
 {
   "productPrices": {
+    "22": 14,
     "24": 12,
     "25": 14,
     "27": 12,
@@ -7,6 +8,7 @@
     "29": 13
   },
   "productDescriptions": {
+    "22": "Kierans Catapult Band KCB 7 x 3",
     "28": "test",
     "29": "erere"
   },
