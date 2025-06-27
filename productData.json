@@ -1,16 +1,14 @@
 {
   "productPrices": {
-    "23": 67,
     "24": 12,
     "25": 14,
-    "26": 15,
     "27": 12,
     "28": 12,
     "29": 13
   },
   "productDescriptions": {
-    "23": "Redshot .85 x 3",
-    "26": "Shezhou 1mm x 3"
+    "28": "test",
+    "29": "erere"
   },
   "productPhotos": {}
 }
