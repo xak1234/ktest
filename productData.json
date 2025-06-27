@@ -1,11 +1,10 @@
 {
   "productPrices": {
     "28": 12,
-    "29": 11.5
+    "29": 12
   },
   "productDescriptions": {
-    "28": "test",
-    "29": "reete2"
+    "28": "test"
   },
   "productPhotos": {}
 }
