@@ -617,7 +617,7 @@ p {
 footer {
   background-color: transparent;
   text-align: center;
-  padding: 0;
+  padding: 20px;
   font-size: 0.75rem;
   color: #ffffff;
   font-family: 'Courier New', 'Monaco', 'Terminal', monospace;
@@ -626,6 +626,7 @@ footer {
 a {
   color: #00e5ff;
   text-decoration: none;
+  text-shadow: 0 0 5px #00ff00;
 }
 
 a:hover {
@@ -666,7 +667,7 @@ footer a:hover {
   cursor: pointer;
   transition: all 0.3s ease;
   border: 1px solid transparent;
-  opacity: 0.7;
+  opacity: 1;
 }
 
 .sling-secret img:hover {
@@ -894,7 +895,7 @@ footer a:hover {
     
     <div class="slingshot-world-card">
       <a href="https://www.slingshotworld.co.uk/" target="_blank">
-        <img src="sling.jpg" alt="Slingshot World" class="slingshot-world-image">
+        <img src="sling.png" alt="Slingshot World" class="slingshot-world-image">
       </a>
       <div class="slingshot-world-content">
         <a href="https://www.slingshotworld.co.uk/" target="_blank" class="slingshot-world-title-link">
@@ -911,11 +912,11 @@ footer a:hover {
          <a href="https://www.ebay.co.uk/str/kieranscatapultbandslimited" target="_blank">eBay</a>
       </p>
       <p>Email: <a href="mailto:kieranscatapultbandslimited@gmail.com">kieranscatapultbandslimited@gmail.com</a></p>
+      
+      <div class="sling-secret">
+        <img src="tig.png" alt="Tiger" id="slingSecret" onclick="handleSlingClick()">
+      </div>
     </footer>
-    
-    <div class="sling-secret">
-      <img src="tig.png" alt="Tiger" id="slingSecret" onclick="handleSlingClick()">
-    </div>
   </div>
 
   <!-- Add Product Modal -->
@@ -946,9 +947,10 @@ footer a:hover {
     let slingClickCount = 0;
     let slingClickTimeout = null;
     
+    const API_URL = '/api/data'; // Using a relative path for Render proxy
+
     // GitHub API configuration (you'll need to provide these)
-    const GITHUB_TOKEN = 'your_github_token_here';
-    const GITHUB_REPO = 'xak1234/ktest';
+    const GITHUB_REPO = 'kieranscatapult/kieranscats';
     const GITHUB_BRANCH = 'main';
     
     // Initialize Stripe
@@ -961,7 +963,7 @@ footer a:hover {
     async function loadProducts() {
       try {
         const resp = await fetch(
-          'https://api.github.com/repos/xak1234/ktest/contents/products'
+          `https://api.github.com/repos/${GITHUB_REPO}/contents/products`
         );
         const items = await resp.json();
         const gallery = document.getElementById('gallery');
@@ -979,7 +981,7 @@ footer a:hover {
           el.innerHTML = `
             <img src="${file.download_url}" alt="${file.name}">
             <p>${displayName}</p>
-            <p class="product-price" id="price-${index}" style="display: none;">£0.00</p>
+            <p class="product-price" id="price-${index}">£0.00</p>
             <p class="product-description" id="description-${index}" style="display: none;"></p>
             <div class="product-popup" id="popup-${index}" style="display: none;">
               <div class="popup-product-name">${displayName}</div>
@@ -1010,11 +1012,7 @@ footer a:hover {
         });
         
         // Load and display saved data
-        loadSavedData();
-        displayPrices();
-        displayDescriptions();
-        displayPhotos();
-        updateDescriptionStats();
+        await loadSavedData();
         
         // Initialize Stripe
         initializeStripe();
@@ -1026,41 +1024,46 @@ footer a:hover {
       }
     }
     
-    // Load saved data from localStorage
-    function loadSavedData() {
-      const savedPrices = localStorage.getItem('productPrices');
-      const savedDescriptions = localStorage.getItem('productDescriptions');
-      const savedPhotos = localStorage.getItem('productPhotos');
-      
-      if (savedPrices) {
-        productPrices = JSON.parse(savedPrices);
-      }
-      if (savedDescriptions) {
-        productDescriptions = JSON.parse(savedDescriptions);
-      }
-      if (savedPhotos) {
-        productPhotos = JSON.parse(savedPhotos);
+    // Load saved data from the backend
+    async function loadSavedData() {
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        productPrices = data.productPrices || {};
+        productDescriptions = data.productDescriptions || {};
+        productPhotos = data.productPhotos || {};
+
+        displayPrices();
+        displayDescriptions();
+        displayPhotos();
+        updateDescriptionStats();
+      } catch (error) {
+        console.error('Error loading saved data:', error);
       }
     }
     
     // Display prices on products
     function displayPrices() {
-      Object.keys(productPrices).forEach(productId => {
-        const price = productPrices[productId];
-        const productElement = document.querySelector(`#price-${productId}`);
-        const productCard = productElement.closest('.product');
-        const popupElement = document.querySelector(`#popup-${productId}`);
-        const popupPriceElement = document.querySelector(`#popup-price-${productId}`);
-        
-        if (productElement && productCard) {
+      const allProducts = document.querySelectorAll('.product');
+      allProducts.forEach(product => {
+        const productId = product.dataset.productId;
+        const productElement = product.querySelector(`#price-${productId}`);
+        const popupElement = product.querySelector(`#popup-${productId}`);
+        const popupPriceElement = product.querySelector(`#popup-price-${productId}`);
+
+        if (productPrices[productId] && !isNaN(productPrices[productId])) {
+          const price = parseFloat(productPrices[productId]);
           productElement.textContent = `£${price.toFixed(2)}`;
-          productElement.style.display = 'block';
-          productCard.classList.add('has-price');
-          
-          // Show popup for products with prices
+          product.classList.add('has-price');
           if (popupElement && popupPriceElement) {
             popupElement.style.display = 'block';
             popupPriceElement.textContent = `£${price.toFixed(2)}`;
+          }
+        } else {
+          productElement.textContent = '£0.00';
+          product.classList.remove('has-price');
+          if (popupElement) {
+            popupElement.style.display = 'none';
           }
         }
       });
@@ -1135,7 +1138,7 @@ footer a:hover {
       currentProductId = null;
     }
     
-    function saveProductDetails() {
+    async function saveProductDetails() {
       const priceInput = document.getElementById('priceInput');
       const descriptionInput = document.getElementById('descriptionInput');
       const photoUrlInput = document.getElementById('photoUrlInput');
@@ -1187,7 +1190,8 @@ footer a:hover {
             popupPriceElement.textContent = `£${price.toFixed(2)}`;
           }
         } else {
-          priceElement.style.display = 'none';
+          priceElement.textContent = '£0.00';
+          priceElement.style.display = 'block';
           productCard.classList.remove('has-price');
           
           // Hide popup if no price
@@ -1215,10 +1219,8 @@ footer a:hover {
           }
         }
         
-        // Save to localStorage
-        localStorage.setItem('productPrices', JSON.stringify(productPrices));
-        localStorage.setItem('productDescriptions', JSON.stringify(productDescriptions));
-        localStorage.setItem('productPhotos', JSON.stringify(productPhotos));
+        // Save to backend
+        await saveData();
         
         // Update stats
         updateDescriptionStats();
@@ -1652,16 +1654,17 @@ footer a:hover {
       document.getElementById('showManagementBtn').style.display = 'none';
     }
     
-    function deleteProduct() {
+    async function deleteProduct() {
       if (currentProductId === null) return;
       if (!confirm('Are you sure you want to delete this product?')) return;
-      // Remove from localStorage
+      // Remove from local objects
       delete productPrices[currentProductId];
       delete productDescriptions[currentProductId];
       delete productPhotos[currentProductId];
-      localStorage.setItem('productPrices', JSON.stringify(productPrices));
-      localStorage.setItem('productDescriptions', JSON.stringify(productDescriptions));
-      localStorage.setItem('productPhotos', JSON.stringify(productPhotos));
+      
+      // Save updated data to backend
+      await saveData();
+
       // Remove from DOM
       const productCard = document.querySelector(`[data-product-id="${currentProductId}"]`);
       if (productCard) productCard.remove();
@@ -1681,7 +1684,7 @@ footer a:hover {
       document.getElementById('addProductModal').style.display = 'none';
     }
 
-    function addProduct() {
+    async function addProduct() {
       const name = document.getElementById('newProductName').value.trim();
       const image = document.getElementById('newProductImage').value.trim();
       const price = parseFloat(document.getElementById('newProductPrice').value.trim());
@@ -1693,13 +1696,14 @@ footer a:hover {
       // Find next available productId
       let productId = 0;
       while (document.querySelector(`[data-product-id="${productId}"]`)) productId++;
-      // Save to localStorage
+      // Save to local objects
       productPrices[productId] = price;
-      productDescriptions[productId] = description;
+      if (description) productDescriptions[productId] = description;
       productPhotos[productId] = image;
-      localStorage.setItem('productPrices', JSON.stringify(productPrices));
-      localStorage.setItem('productDescriptions', JSON.stringify(productDescriptions));
-      localStorage.setItem('productPhotos', JSON.stringify(productPhotos));
+
+      // Save to backend
+      await saveData();
+
       // Add to DOM
       const gallery = document.getElementById('gallery');
       const el = document.createElement('div');
@@ -1709,7 +1713,7 @@ footer a:hover {
         <img src="${image}" alt="${name}">
         <p>${name}</p>
         <p class="product-price" id="price-${productId}" style="display: block;">£${price.toFixed(2)}</p>
-        <p class="product-description" id="description-${productId}" style="display: block;">${description}</p>
+        <p class="product-description" id="description-${productId}" style="display: block;">${description || 'No description available'}</p>
         <div class="product-popup" id="popup-${productId}" style="display: block;">
           <div class="popup-product-name">${name}</div>
           <div class="popup-product-price" id="popup-price-${productId}">£${price.toFixed(2)}</div>
@@ -1762,8 +1766,53 @@ footer a:hover {
       `);
     }
     
+    // Save all data to the backend
+    async function saveData() {
+        try {
+            const dataToSave = {
+                productPrices,
+                productDescriptions,
+                productPhotos
+            };
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dataToSave)
+            });
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server error: ${response.status} - ${errorText}`);
+            }
+            console.log('Data saved successfully.');
+        } catch (error) {
+            console.error('Error saving data:', error);
+            alert(`Failed to save data: ${error.message}\n\nPlease check that the backend service is running.`);
+        }
+    }
+    
+    // Test backend connectivity
+    async function testBackend() {
+        try {
+            const response = await fetch(API_URL);
+            if (response.ok) {
+                console.log('Backend is accessible');
+                return true;
+            } else {
+                console.error('Backend responded with error:', response.status);
+                return false;
+            }
+        } catch (error) {
+            console.error('Backend is not accessible:', error);
+            return false;
+        }
+    }
+    
     // Initialize
     loadProducts();
+    // Test backend on page load
+    testBackend();
   </script>
 </body>
 </html>
