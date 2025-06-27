@@ -1,5 +1,6 @@
 {
   "productPrices": {
+    "0": 12,
     "1": 23,
     "2": 44,
     "3": 66,
@@ -14,6 +15,7 @@
     "29": 13
   },
   "productDescriptions": {
+    "0": "tyuyuyu",
     "1": ".8 Red Shot x 3",
     "2": ".9 KCB x 3",
     "3": ".9 Redshot x 3",
