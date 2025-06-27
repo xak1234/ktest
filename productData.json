@@ -1,5 +1,6 @@
 {
   "productPrices": {
+    "18": 55,
     "21": 55,
     "24": 12,
     "25": 14,
@@ -9,6 +10,7 @@
     "29": 13
   },
   "productDescriptions": {
+    "18": "GZK.72 x 3",
     "21": "KCB Rolls of Band",
     "26": "Sheshou 1mm x 3",
     "28": "test",
