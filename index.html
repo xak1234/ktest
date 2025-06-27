@@ -947,10 +947,11 @@ footer a:hover {
     let slingClickCount = 0;
     let slingClickTimeout = null;
     
-    const API_URL = '/api/data'; // Using a relative path for Render proxy
+    // API URL - Replace with your actual Render backend service URL
+    const API_URL = 'https://ktest-build.onrender.com/api/data';
 
     // GitHub API configuration (you'll need to provide these)
-    const GITHUB_REPO = 'kieranscatapult/kieranscats';
+    const GITHUB_REPO = 'xak1234/ktest';
     const GITHUB_BRANCH = 'main';
     
     // Initialize Stripe
@@ -1028,10 +1029,29 @@ footer a:hover {
     async function loadSavedData() {
       try {
         const response = await fetch(API_URL);
-        const data = await response.json();
-        productPrices = data.productPrices || {};
-        productDescriptions = data.productDescriptions || {};
-        productPhotos = data.productPhotos || {};
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Server error response:', errorText);
+          throw new Error(`Server error: ${response.status} - ${errorText}`);
+        }
+        
+        const responseText = await response.text();
+        console.log('Raw response:', responseText);
+        
+        if (!responseText.trim()) {
+          console.log('Empty response, using default empty data');
+          productPrices = {};
+          productDescriptions = {};
+          productPhotos = {};
+        } else {
+          const data = JSON.parse(responseText);
+          productPrices = data.productPrices || {};
+          productDescriptions = data.productDescriptions || {};
+          productPhotos = data.productPhotos || {};
+        }
 
         displayPrices();
         displayDescriptions();
@@ -1039,6 +1059,15 @@ footer a:hover {
         updateDescriptionStats();
       } catch (error) {
         console.error('Error loading saved data:', error);
+        console.log('Using default empty data due to error');
+        productPrices = {};
+        productDescriptions = {};
+        productPhotos = {};
+        
+        displayPrices();
+        displayDescriptions();
+        displayPhotos();
+        updateDescriptionStats();
       }
     }
     

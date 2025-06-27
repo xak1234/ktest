@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Backend Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Backend Service Test</h1>
+    
+    <div id="status"></div>
+    
+    <button onclick="testBackend()">Test Backend Connection</button>
+    <button onclick="testGitHubData()">Test GitHub Data Fetch</button>
+    <button onclick="testSaveData()">Test Save Data</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_URL = '/api/data';
+        
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        function showResults(title, data) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+        }
+        
+        async function testBackend() {
+            showStatus('Testing backend connection...', 'info');
+            
+            try {
+                const response = await fetch(API_URL);
+                const responseText = await response.text();
+                
+                console.log('Response status:', response.status);
+                console.log('Response text:', responseText);
+                
+                if (response.ok) {
+                    showStatus('✅ Backend is accessible!', 'success');
+                    showResults('Backend Response', {
+                        status: response.status,
+                        contentType: response.headers.get('content-type'),
+                        body: responseText
+                    });
+                } else {
+                    showStatus(`❌ Backend error: ${response.status}`, 'error');
+                    showResults('Error Response', {
+                        status: response.status,
+                        body: responseText
+                    });
+                }
+            } catch (error) {
+                showStatus(`❌ Backend connection failed: ${error.message}`, 'error');
+                console.error('Connection error:', error);
+            }
+        }
+        
+        async function testGitHubData() {
+            showStatus('Testing GitHub data fetch...', 'info');
+            
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                
+                showStatus('✅ GitHub data fetched successfully!', 'success');
+                showResults('GitHub Data', data);
+            } catch (error) {
+                showStatus(`❌ GitHub data fetch failed: ${error.message}`, 'error');
+                console.error('GitHub fetch error:', error);
+            }
+        }
+        
+        async function testSaveData() {
+            showStatus('Testing data save...', 'info');
+            
+            const testData = {
+                productPrices: { "0": 9.99 },
+                productDescriptions: { "0": "Test product description" },
+                productPhotos: { "0": "https://example.com/test.jpg" }
+            };
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const responseText = await response.text();
+                
+                if (response.ok) {
+                    showStatus('✅ Data saved successfully!', 'success');
+                    showResults('Save Response', {
+                        status: response.status,
+                        body: responseText
+                    });
+                } else {
+                    showStatus(`❌ Save failed: ${response.status}`, 'error');
+                    showResults('Save Error', {
+                        status: response.status,
+                        body: responseText
+                    });
+                }
+            } catch (error) {
+                showStatus(`❌ Save request failed: ${error.message}`, 'error');
+                console.error('Save error:', error);
+            }
+        }
+        
+        // Auto-test on page load
+        window.onload = function() {
+            showStatus('Page loaded. Click "Test Backend Connection" to start testing.', 'info');
+        };
+    </script>
+</body>
+</html> 

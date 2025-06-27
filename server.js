@@ -10,7 +10,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const GITHUB_TOKEN = process.env.GITHUB_PAT;
-const GITHUB_REPO = 'kieranscatapult/kieranscats';
+const GITHUB_REPO = 'xak1234/ktest';
 const DATA_FILE_PATH = 'productData.json';
 
 // Function to get the SHA of the data file
