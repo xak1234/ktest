@@ -1,6 +1,5 @@
 {
   "productPrices": {
-    "22": 555,
     "24": 12,
     "25": 14,
     "26": 15,
@@ -8,6 +7,8 @@
     "28": 12,
     "29": 13
   },
-  "productDescriptions": {},
+  "productDescriptions": {
+    "26": "Shezhou 1mm x 3"
+  },
   "productPhotos": {}
 }
