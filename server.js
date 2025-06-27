@@ -32,9 +32,12 @@ const getFileSha = async () => {
 // Endpoint to get product data
 app.get('/api/data', async (req, res) => {
   try {
-    const url = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${DATA_FILE_PATH}`;
-    const response = await axios.get(url);
-    res.json(response.data);
+    const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${DATA_FILE_PATH}?ref=main`;
+    const response = await axios.get(url, {
+      headers: GITHUB_TOKEN ? { 'Authorization': `token ${GITHUB_TOKEN}` } : {}
+    });
+    const fileContent = Buffer.from(response.data.content, 'base64').toString('utf-8');
+    res.json(JSON.parse(fileContent));
   } catch (error) {
     if (error.response && error.response.status === 404) {
       res.json({}); // Return empty object if file not found
