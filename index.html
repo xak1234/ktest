@@ -734,7 +734,7 @@ footer a:hover {
 
 .contact-section {
   background-color: #000000;
-  border: 3px solid #333333;
+  border: 2px solid #333333;
   margin: 20px;
   border-radius: 10px;
   padding: 10px;
@@ -899,11 +899,12 @@ footer a:hover {
   text-shadow: 0 0 8px #00e5ff;
 }
 .detail-product-description {
-  color: #cccccc;
+  color: #00ff00;
   font-size: 0.95rem;
   margin-bottom: 14px;
-  font-family: 'Segoe UI', sans-serif;
-  text-shadow: 0 0 4px #00e5ff44;
+  font-family: 'Courier New', 'Monaco', 'Terminal', monospace;
+  font-weight: bold;
+  text-shadow: 0 0 5px #00ff00;
 }
 .detail-payment-buttons {
   display: flex;
@@ -1159,11 +1160,10 @@ footer a:hover {
           
           el.innerHTML = `
             <img src="${file.download_url}" alt="${file.name}">
-            <p>${displayName}</p>
+            <p>N/A</p>
             <p class="product-price" id="price-${index}">£0.00</p>
             <div class="product-detail-card" id="detail-card-${index}" style="display: none;">
               <div class="detail-card-content">
-                <div class="detail-product-name">${displayName}</div>
                 <div class="detail-product-description" id="detail-description-${index}"></div>
                 <div class="detail-payment-buttons">
                   <button class="detail-buy-button" onclick="buyProduct(${index}, '${displayName}', 'paypal')">
@@ -1258,6 +1258,7 @@ footer a:hover {
         displayPrices();
         displayDescriptions();
         displayPhotos();
+        updatePurchaseCardDescriptions();
         updateDescriptionStats();
         
         console.log('Data loading and display complete');
@@ -1271,6 +1272,7 @@ footer a:hover {
         displayPrices();
         displayDescriptions();
         displayPhotos();
+        updatePurchaseCardDescriptions();
         updateDescriptionStats();
       }
     }
@@ -1299,7 +1301,7 @@ footer a:hover {
       console.log('Price display complete');
     }
     
-    // Display descriptions on products
+    // Display descriptions on products - Use entered descriptions as the main product text
     function displayDescriptions() {
       console.log('Displaying descriptions for products...');
       console.log('Available descriptions in data:', productDescriptions);
@@ -1315,13 +1317,15 @@ footer a:hover {
         
         if (productNameElement) {
           if (description && description.trim()) {
+            // Use the entered description as the main product text
             productNameElement.textContent = description;
             product.classList.add('has-description');
-            console.log(`Product ${productId}: Description displayed`);
+            console.log(`Product ${productId}: Description displayed: "${description}"`);
           } else {
-            // Keep the original filename-based name if no description
+            // Show "N/A" if no description exists
+            productNameElement.textContent = "N/A";
             product.classList.remove('has-description');
-            console.log(`Product ${productId}: No description, keeping original name`);
+            console.log(`Product ${productId}: No description, showing N/A`);
           }
         } else {
           console.warn(`Product ${productId}: Could not find product name element`);
@@ -1341,6 +1345,26 @@ footer a:hover {
           productImage.src = photoUrl;
         }
       });
+    }
+    
+    // Update purchase card descriptions to ensure they only show the correct description variable
+    function updatePurchaseCardDescriptions() {
+      console.log('Updating purchase card descriptions...');
+      const allProducts = document.querySelectorAll('.product');
+      
+      allProducts.forEach(product => {
+        const productId = product.dataset.productId;
+        const detailDescription = product.querySelector(`#detail-description-${productId}`);
+        
+        const description = productDescriptions[productId] || '';
+        const displayText = description || 'N/A';
+        
+        if (detailDescription) {
+          detailDescription.textContent = displayText;
+          console.log(`Purchase card ${productId}: Description set to "${displayText}"`);
+        }
+      });
+      console.log('Purchase card descriptions updated');
     }
     
     // Function to handle photo file upload
@@ -1388,10 +1412,9 @@ footer a:hover {
       const currentDescription = productDescriptions[productId] || '';
       const currentPhoto = productPhotos[productId] || '';
       
-      // Set the product description (this is what was shown in green)
-      // Use the saved description if it exists, otherwise use the original product name
-      const displayDescription = currentDescription || productName;
-      document.getElementById('modalProductNameInput').value = displayDescription;
+      // Set the product description input field
+      // Use the saved description if it exists, otherwise leave empty (will default to "N/A")
+      document.getElementById('modalProductNameInput').value = currentDescription;
       document.getElementById('priceInput').value = currentPrice;
       
       // Clear the file input and status
@@ -1433,9 +1456,9 @@ footer a:hover {
           delete productPrices[currentProductId];
         }
         
-        // Save the product name/description (this replaces the original filename-based name)
-        if (productName) {
-          productDescriptions[currentProductId] = productName;
+        // Save the product description - only save if not empty
+        if (productName && productName.trim()) {
+          productDescriptions[currentProductId] = productName.trim();
         } else {
           delete productDescriptions[currentProductId];
         }
@@ -1479,9 +1502,13 @@ footer a:hover {
         productImage.src = photoUrl;
       }
       
-      // Update the product name (the green text)
-      if (productName && productNameElement) {
-        productNameElement.textContent = productName;
+      // Update the main card text with the entered description
+      if (productNameElement) {
+        if (productName && productName.trim()) {
+          productNameElement.textContent = productName;
+        } else {
+          productNameElement.textContent = "N/A";
+        }
       }
       
       if (price && !isNaN(price)) {
@@ -1494,7 +1521,8 @@ footer a:hover {
         productCard.classList.remove('has-price');
       }
       
-      if (productName) {
+      // Add visual indication if description exists
+      if (productDescriptions[currentProductId] && productDescriptions[currentProductId].trim()) {
         productCard.classList.add('has-description');
       } else {
         productCard.classList.remove('has-description');
@@ -1502,6 +1530,8 @@ footer a:hover {
       
       // Save to backend
       saveData().then(() => {
+        // Update purchase card descriptions to ensure they show the correct variable
+        updatePurchaseCardDescriptions();
         // Update stats
         updateDescriptionStats();
         // Close modal
@@ -1855,7 +1885,8 @@ footer a:hover {
       const detailDescription = document.getElementById(`detail-description-${productId}`);
       
       if (detailCard && detailDescription) {
-        detailDescription.textContent = description;
+        // Show description if it exists, otherwise show "N/A"
+        detailDescription.textContent = description || 'N/A';
         detailCard.style.display = 'block';
       }
     }
@@ -2004,11 +2035,10 @@ footer a:hover {
       el.dataset.productId = productId;
       el.innerHTML = `
         <img src="${image}" alt="${name}">
-        <p>${name}</p>
+        <p>${description || 'N/A'}</p>
         <p class="product-price" id="price-${productId}" style="display: block;">£${price.toFixed(2)}</p>
         <div class="product-detail-card" id="detail-card-${productId}" style="display: none;">
           <div class="detail-card-content">
-            <div class="detail-product-name">${name}</div>
             <div class="detail-product-description" id="detail-description-${productId}"></div>
             <div class="detail-payment-buttons">
               <button class="detail-buy-button" onclick="buyProduct(${productId}, '${name}', 'paypal')">💳 Buy Now via PayPal</button>
@@ -2026,6 +2056,15 @@ footer a:hover {
         }
       });
       gallery.appendChild(el);
+      
+      // Set the purchase card description from the correct source
+      const detailDescription = document.getElementById(`detail-description-${productId}`);
+      const displayText = productDescriptions[productId] || 'N/A';
+      
+      if (detailDescription) {
+        detailDescription.textContent = displayText;
+      }
+      
       closeAddProductModal();
       updateDescriptionStats();
     }
