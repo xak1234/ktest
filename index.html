@@ -735,7 +735,7 @@ footer a:hover {
 .contact-section {
   background-color: #000000;
   border: 2px solid #333333;
-  margin: 20px;
+  margin: 12px;
   border-radius: 10px;
   padding: 10px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
@@ -1017,8 +1017,12 @@ footer a:hover {
       </div>
       
       <div class="photo-upload-section">
-        <label for="photoFileInput" class="photo-upload-label">🖼️ Upload Product Photo</label>
+        <label for="photoFileInput" class="photo-upload-label">🖼️ Upload Product Photo (Max 1MB)</label>
         <input type="file" id="photoFileInput" class="photo-upload-input" accept="image/*" onchange="handlePhotoFileUpload(event)">
+        
+        <label for="photoUrlInput" class="photo-upload-label" style="margin-top: 10px;">🔗 Or Use Photo URL (Recommended)</label>
+        <input type="url" id="photoUrlInput" class="photo-upload-input" placeholder="https://example.com/image.jpg" onchange="handlePhotoUrlInput()">
+        
         <img id="photoPreview" class="photo-preview" style="display: none;" alt="Photo Preview">
         <div id="uploadStatus" style="margin-top: 5px; font-size: 0.8rem; color: #00e5ff;"></div>
       </div>
@@ -1347,6 +1351,49 @@ footer a:hover {
       });
     }
     
+    // Function to compress images before upload to avoid 413 payload errors
+    function compressImage(file, quality = 0.7, maxWidth = 800) {
+      return new Promise((resolve, reject) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = function() {
+          // Calculate new dimensions while maintaining aspect ratio
+          let { width, height } = img;
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+          
+          // Set canvas size
+          canvas.width = width;
+          canvas.height = height;
+          
+          // Draw and compress image
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Convert to compressed data URL
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          
+          // Check if compression was effective
+          const originalSize = file.size;
+          const compressedSize = Math.round((compressedDataUrl.length * 3) / 4); // Rough base64 size estimate
+          
+          console.log(`Image compressed: ${Math.round(originalSize/1024)}KB -> ${Math.round(compressedSize/1024)}KB`);
+          
+          resolve(compressedDataUrl);
+        };
+        
+        img.onerror = function() {
+          reject(new Error('Failed to load image for compression'));
+        };
+        
+        // Load the image
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
     // Update purchase card descriptions to ensure they only show the correct description variable
     function updatePurchaseCardDescriptions() {
       console.log('Updating purchase card descriptions...');
@@ -1388,6 +1435,9 @@ footer a:hover {
           return;
         }
         
+        // Clear URL input when file is selected
+        document.getElementById('photoUrlInput').value = '';
+        
         // Create a preview
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -1417,16 +1467,24 @@ footer a:hover {
       document.getElementById('modalProductNameInput').value = currentDescription;
       document.getElementById('priceInput').value = currentPrice;
       
-      // Clear the file input and status
+      // Clear the file input, URL input and status
       document.getElementById('photoFileInput').value = '';
+      document.getElementById('photoUrlInput').value = '';
       document.getElementById('uploadStatus').textContent = '';
       
-      // Show photo preview if available
+      // Show photo preview if available and populate URL field for existing photos
       const photoPreview = document.getElementById('photoPreview');
       if (currentPhoto) {
         photoPreview.src = currentPhoto;
         photoPreview.style.display = 'block';
-        document.getElementById('uploadStatus').textContent = '📷 Current photo loaded';
+        
+        // If it's a URL (not base64), put it in the URL input for easier editing
+        if (currentPhoto.startsWith('http')) {
+          document.getElementById('photoUrlInput').value = currentPhoto;
+          document.getElementById('uploadStatus').textContent = '🔗 Current photo URL loaded';
+        } else {
+          document.getElementById('uploadStatus').textContent = '📷 Current photo loaded (base64)';
+        }
         document.getElementById('uploadStatus').style.color = '#00e5ff';
       } else {
         photoPreview.style.display = 'none';
@@ -1445,9 +1503,11 @@ footer a:hover {
       const nameInput = document.getElementById('modalProductNameInput');
       const priceInput = document.getElementById('priceInput');
       const photoFileInput = document.getElementById('photoFileInput');
+      const photoUrlInput = document.getElementById('photoUrlInput');
       const productName = nameInput.value.trim();
       const price = parseFloat(priceInput.value.trim());
       const photoFile = photoFileInput.files[0];
+      const photoUrl = photoUrlInput.value.trim();
       
       if (currentProductId !== null) {
         if (price && !isNaN(price)) {
@@ -1463,29 +1523,46 @@ footer a:hover {
           delete productDescriptions[currentProductId];
         }
         
-        // Handle photo upload
-        let photoUrl = productPhotos[currentProductId] || ''; // Keep existing photo if no new upload
-        if (photoFile) {
+        // Handle photo upload with compression to avoid 413 errors
+        let finalPhotoUrl = productPhotos[currentProductId] || ''; // Keep existing photo if no new upload
+        
+        // Priority: URL input > File upload > Existing photo
+        if (photoUrl) {
+          // User provided a URL - use it directly (recommended method)
+          finalPhotoUrl = photoUrl;
+          productPhotos[currentProductId] = finalPhotoUrl;
+          updateProductDisplay(productName, price, finalPhotoUrl);
+        } else if (photoFile) {
           try {
-            // Convert file to data URL for storage
-            const reader = new FileReader();
-            reader.onload = function(e) {
-              photoUrl = e.target.result;
-              productPhotos[currentProductId] = photoUrl;
-              
-              // Update the product display
+            // Check file size (limit to 1MB to avoid 413 errors)
+            if (photoFile.size > 1024 * 1024) {
+              alert('Photo is too large. Please use an image smaller than 1MB to avoid server errors.\n\nFor now, photo uploads are limited due to server payload restrictions.\n\nAlternative: Use image URLs from external hosting services.');
               updateProductDisplay(productName, price, photoUrl);
-            };
-            reader.readAsDataURL(photoFile);
-          } catch (error) {
-            console.error('Error processing photo:', error);
-            alert('Error processing photo. Please try again.');
-            return;
+              return;
+            }
+            
+                         // Compress and convert file to data URL for storage
+             compressImage(photoFile, 0.7, 800).then(compressedDataUrl => {
+               finalPhotoUrl = compressedDataUrl;
+               productPhotos[currentProductId] = finalPhotoUrl;
+               
+               // Update the product display
+               updateProductDisplay(productName, price, finalPhotoUrl);
+             }).catch(error => {
+               console.error('Error compressing photo:', error);
+               alert('Error processing photo. Please try a smaller image or use an image URL instead.');
+               updateProductDisplay(productName, price, finalPhotoUrl);
+             });
+                      } catch (error) {
+              console.error('Error processing photo:', error);
+              alert('Error processing photo. Please try again.');
+              updateProductDisplay(productName, price, finalPhotoUrl);
+              return;
+            }
+          } else {
+            // No new photo uploaded, update display with existing photo
+            updateProductDisplay(productName, price, finalPhotoUrl);
           }
-        } else {
-          // No new photo uploaded, update display with existing photo
-          updateProductDisplay(productName, price, photoUrl);
-        }
       }
     }
     
@@ -1944,17 +2021,26 @@ footer a:hover {
     function handlePhotoUrlInput() {
       const photoUrlInput = document.getElementById('photoUrlInput');
       const photoPreview = document.getElementById('photoPreview');
+      const uploadStatus = document.getElementById('uploadStatus');
       const url = photoUrlInput.value.trim();
       
       if (url) {
         photoPreview.src = url;
         photoPreview.style.display = 'block';
+        uploadStatus.textContent = '🔗 Photo URL set (recommended method)';
+        uploadStatus.style.color = '#00ff00';
+        
+        // Clear file input when URL is used
+        document.getElementById('photoFileInput').value = '';
+        
         photoPreview.onerror = function() {
-          alert('Invalid image URL. Please check the URL and try again.');
+          uploadStatus.textContent = '❌ Invalid image URL. Please check the URL and try again.';
+          uploadStatus.style.color = '#ff6b35';
           photoPreview.style.display = 'none';
         };
       } else {
         photoPreview.style.display = 'none';
+        uploadStatus.textContent = '';
       }
     }
     
